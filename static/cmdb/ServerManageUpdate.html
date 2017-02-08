@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>更新数据</title>
+    <!--<link rel="shortcut icon" href="favicon.ico">-->
+    <link href="../css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+    <link href="../css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <link href="../css/plugins/iCheck/custom.css" rel="stylesheet">
+    <link href="../css/animate.min.css" rel="stylesheet">
+    <link href="../css/style.min862f.css?v=4.1.0" rel="stylesheet">
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-10">
+            <div class="ibox-content">
+                <div class="row">
+                    <h3>主机信息</h3>
+                    <hr>
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-10">
+                        <form role="form" class="form-horizontal" id="inputForm">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">机房：</label>
+                                <div class="col-sm-10">
+                                    <select class="form-control" id="idcs">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">OS：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="os" name="servername" disabled/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">IP：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="ip" name="ip" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">主机名：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="hostname" name="hostname" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">CPU核心数：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="cpu" name="cpu" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">内存(M)：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="memory" name="memory" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">硬盘：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="disk" name="disk" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">网络类型：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="net_type" name="net_type" disabled/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">服务器类型：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="server_type" name="server_type" disabled/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">制造商：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="manufacturer" name="manufacturer" disabled/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">型号：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="model" name="model" disabled/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">串号：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="sn" name="sn" disabled/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">UUID：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="uuid" name="uuid" disabled/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">SKU：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="sku" name="sku" disabled/>
+                                </div>
+                            </div>
+
+                            <hr>
+                            <div id="content"></div>
+                            <div class="btn btn-primary" onclick="save()">
+                                <i class="fa fa-search"></i>&nbsp;保存
+                            </div>
+                            <div class="btn btn-success" onclick="history.back(); return false;">
+                                <i class="fa fa-backward"></i>&nbsp;返回
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../js/jquery.min.js?v=2.1.4"></script>
+<script src="../js/jquery.validate.js"></script>
+<script src="../js/bootstrap.min.js?v=3.3.6"></script>
+<script src="../js/content.min.js?v=1.0.0"></script>
+<script src="../js/plugins/iCheck/icheck.min.js"></script>
+<script src="../js/base.js"></script>
+<script src="../js/jquery.tmpl.js"></script>
+<script id="data_t" type="text/x-jquery-tmpl">
+	<option id=${name}>${name}</option>
+</script>
+<script>
+    var id;
+    $(document).ready(function () {
+        id = sessionStorage.airportID;
+        ajaxPost({
+            pageNumber: pageNum,
+            pageSize: pageList,
+            orderProperty: sortWord,
+            orderDirection: sortRules
+        }, "http://127.0.0.1:5002/idc/list", function (data) {
+            //console.log("数据", JSON.stringify(data));
+            //$("servers option").val(data.data)
+            $("#data_t").tmpl(data.data).appendTo($("#idcs"));
+        });
+
+        ajaxPost({
+            id: id
+        }, "http://127.0.0.1:5002/server/get_one_server", function (data) {
+            console.log(data);
+            var obj = data.data;
+            if (obj['server_type'] == 0){
+                obj['server_type'] = '虚拟机'
+            }else{
+                obj['server_type'] = '实体机'
+            }
+
+            if (obj['net_type'] == 0){
+                obj['net_type'] = '公网主机'
+            }else if (obj['net_type'] == 1){
+                obj['net_type'] = 'DMZ主机'
+            }else{
+                obj['net_type'] = '安全区主机'
+            }
+            for (var k in obj){
+                $("#" + k).val(obj[k]);
+            }
+            $('#' + data.data['idc_name']).attr('selected', 'selected')
+            console.log(data.data)
+        });
+        console.log("更新页面的id", id);
+        $(".i-checks").iCheck({
+            checkboxClass: "icheckbox_square-green",
+            radioClass: "iradio_square-green"
+        });
+        dataText()
+    });
+
+    function save() {
+        ajaxPost({
+            id : id,
+            idc_name: $("#idcs option:selected").text(),
+            address : $("#address").val(),
+            ip: $('#ip').val(),
+            hostname: $('#hostname').val(),
+            cpu: $('#cpu').val(),
+            memory: $('#memory').val(),
+            disk: $('#disk').val(),
+        }, "http://127.0.0.1:5002/server/update", function(data) {
+            console.log('提交数据', data);
+            if (data.code == 1) {
+                location.href = "ServerManageList.html";
+            } else {
+                alert("修改失败");
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

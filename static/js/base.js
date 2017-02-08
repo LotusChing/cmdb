@@ -121,40 +121,70 @@ var sortWord = 'id';
 var certflag = false;
 
 function page(num, str) {
-	alert(num, str);
-	alert()
 	if (str) {
 		pageNum = parseInt(num);
 		console.log('页数', pageNum)
 	} else {
-		if (num == "first") {
-			pageNum = 1;
-		}
-		if (num == "prev") {
-			console.log(pageNum);
-			if(pageNum <= 1){
-				pageNum = 1;
-				return false;
-			}else {
-				pageNum = pageNum - 1;
-			}
-		}
-		if (num == "next") {
-			if(pageNum >=pageSize){
-				pageNum = pageSize;
-				return false;
-			}else {
-				pageNum = pageNum + 1;
-			}
-			console.log("当前页数", pageNum);
-			console.log("页数",pageSize)
-		}
-		if (num == "last") {
-			pageNum = pageSize;
+		console.log($('#searchTxt').val().length)
+        if ($('#searchTxt').val().length < 1){
+            console.log('!!!Inital!!!')
+            if (num == "first") {
+                pageNum = 1;
+            }
+            if (num == "prev") {
+                console.log(pageNum);
+                if(pageNum <= 1){
+                    pageNum = 1;
+                    return false;
+                }else {
+                    pageNum = pageNum - 1;
+                }
+            }
+            if (num == "next") {
+                if(pageNum >=pageSize){
+                    pageNum = pageSize;
+                    return false;
+                }else {
+                    pageNum = pageNum + 1;
+                }
+                console.log("当前页数", pageNum);
+                console.log("页数",pageSize)
+            }
+            if (num == "last") {
+                pageNum = pageSize;
+            }
+            init();
+		}else{
+        	console.log('!!!Search!!!')
+            if (num == "first") {
+                pageNum = 1;
+            }
+            if (num == "prev") {
+                console.log(pageNum);
+                if(pageNum <= 1){
+                    pageNum = 1;
+                    return false;
+                }else {
+                    pageNum = pageNum - 1;
+                }
+            }
+            if (num == "next") {
+                if(pageNum >=pageSize){
+                    pageNum = pageSize;
+                    return false;
+                }else {
+                    pageNum = pageNum + 1;
+                }
+                console.log("当前页数", pageNum);
+                console.log("页数",pageSize)
+            }
+            if (num == "last") {
+                pageNum = pageSize;
+            }
+        	search();
 		}
 	}
-	$("#pageTo").val(pageNum); //显示当前是第几页
-	init();
+    $("#pageTo").val(pageNum); //显示当前是第几页
 }
 
 function sortData(field) {

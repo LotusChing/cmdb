@@ -61,7 +61,6 @@
                     </div>
                     <div class="form-group" style="border:1px solid #f1f1f2">
                         <select class="form-control" id="filter_key_idc" onchange="filter_key()">
-                            <option id="全部">全部机房</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -211,6 +210,7 @@
         }, "http://127.0.0.1:5002/idc/list", function (data) {
             // console.log("IDC数据",data.data);
             $('#filter_key_idc').empty();
+            $('<option id="全部">全部机房</option>').appendTo($("#filter_key_idc"));
             $("#filter_key_idc_tmpl").tmpl(data.data).appendTo($("#filter_key_idc"));
         });
     }

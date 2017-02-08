@@ -121,16 +121,16 @@ var sortWord = 'id';
 var certflag = false;
 
 function page(num, str) {
+	alert(num, str);
+	alert()
 	if (str) {
 		pageNum = parseInt(num);
 		console.log('页数', pageNum)
-
 	} else {
 		if (num == "first") {
 			pageNum = 1;
 		}
 		if (num == "prev") {
-
 			console.log(pageNum);
 			if(pageNum <= 1){
 				pageNum = 1;
@@ -145,23 +145,16 @@ function page(num, str) {
 				return false;
 			}else {
 				pageNum = pageNum + 1;
-
 			}
-
 			console.log("当前页数", pageNum);
 			console.log("页数",pageSize)
-
 		}
 		if (num == "last") {
 			pageNum = pageSize;
 		}
 	}
-
 	$("#pageTo").val(pageNum); //显示当前是第几页
-
-
 	init();
-
 }
 
 function sortData(field) {

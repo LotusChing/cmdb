@@ -17,7 +17,7 @@ def list(request):
             idc_data = util.SQL('select name from idc where id="{}"'.format(row[1]))
             myjson = {'id': row[0], 'idc_name': idc_data[0][0],  'os': row[2], 'ip': row[3], 'hostname': row[4], 'cpu': row[5], 'memory':row[6], 'disk':row[7],'net_type':row[8],'server_type':row[9],'manufacturer':row[10], 'model':row[11],'sn':row[12],'uuid':row[13],'sku':row[14]}
             jsonData.append(myjson)
-        totalPages = len(jsonData) // int(pageSize)
+        totalPages = int(count_data) // int(pageSize)
         return json.dumps({'code': 1, 'data': jsonData, 'totalPages': totalPages if int(count_data) % int(pageSize) == 0 else totalPages + 1}) # 不能整除则+1
     except Exception as f:
         return json.dumps({'code': 0, 'info': f}, encoding='utf8')

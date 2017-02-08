@@ -6,12 +6,18 @@ from werkzeug.datastructures import ImmutableMultiDict
 
 def list(request):
     try:
-        data = util.SQL('select * from service;')
+        req_data = dict(ImmutableMultiDict(request.form))
+        pageNumber = req_data['pageNumber'][0]
+        pageSize = req_data['pageSize'][0]
+        start_pos = (int(pageNumber) - 1) * int(pageSize)
+        count_data = util.SQL('select count(id) from service;')[0][0]
+        data = util.SQL('select * from service limit {}, {};'.format(start_pos, pageSize))
         jsonData = []
         for row in data:
             myjson = {'id': row[0], 'name': row[2],'service_type': row[3], 'port': row[4], 'path': row[5], 'commands': row[6], 'remark': row[7]}
             jsonData.append(myjson)
-        return json.dumps({'code': 1, 'data': jsonData})
+        totalPages = int(count_data) // int(pageSize)
+        return json.dumps({'code': 1, 'data': jsonData, 'totalPages': totalPages if int(count_data) % int(pageSize) == 0 else totalPages + 1})
     except Exception as f:
         return json.dumps({'code': 0, 'info': f}, encoding='utf8')
 
@@ -84,14 +90,23 @@ def delete(request):
 def search(request):
     try:
         req_data = dict(ImmutableMultiDict(request.form))
+        pageNumber = req_data['pageNumber'][0]
+        pageSize = req_data['pageSize'][0]
+        start_pos = (int(pageNumber) - 1) * int(pageSize)
+        data = {
+            'keywords': req_data['keywords'][0],
+            'start_pos': start_pos,
+            'pageSize': pageSize
+        }
         keywords = req_data['keywords'] * 6
-        data = util.SQL("select * from service s where s.name like '%{}%' or s.service_type like '%{}%' or s.port like '%{}%' or s.path like '%{}%' or s.commands like '%{}%' or s.remark like '%{}%';".format(*keywords))
+        count_data = util.SQL("select count(id) from service s where s.name like '%{keywords}%' or s.service_type like '%{keywords}%' or s.port like '%{keywords}%' or s.path like '%{keywords}%' or s.commands like '%{keywords}%' or s.remark like '%{keywords}%';".format(**data))[0][0]
+        data = util.SQL("select * from service s where s.name like '%{keywords}%' or s.service_type like '%{keywords}%' or s.port like '%{keywords}%' or s.path like '%{keywords}%' or s.commands like '%{keywords}%' or s.remark like '%{keywords}%' limit {start_pos}, {pageSize};".format(**data))
         jsonData = []
         for row in data:
             myjson = {'id': row[0], 'name': row[2], 'service_type': row[3], 'port': row[4], 'path': row[5], 'commands': row[6], 'remark': row[7]}
             jsonData.append(myjson)
-        print(jsonData)
-        return json.dumps({'code': 1, 'data': jsonData})
+        totalPages = int(count_data) // int(pageSize)
+        return json.dumps({'code': 1, 'data': jsonData, 'matchRows':count_data, 'totalPages': totalPages if int(count_data)% int(pageSize) == 0 else totalPages + 1})
     except Exception as f:
         logging.info(f)
         return json.dumps({'code': 0, 'info': f}, encoding='utf8')

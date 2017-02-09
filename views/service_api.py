@@ -98,7 +98,6 @@ def search(request):
             'start_pos': start_pos,
             'pageSize': pageSize
         }
-        keywords = req_data['keywords'] * 6
         count_data = util.SQL("select count(id) from service s where s.name like '%{keywords}%' or s.service_type like '%{keywords}%' or s.port like '%{keywords}%' or s.path like '%{keywords}%' or s.commands like '%{keywords}%' or s.remark like '%{keywords}%';".format(**data))[0][0]
         data = util.SQL("select * from service s where s.name like '%{keywords}%' or s.service_type like '%{keywords}%' or s.port like '%{keywords}%' or s.path like '%{keywords}%' or s.commands like '%{keywords}%' or s.remark like '%{keywords}%' limit {start_pos}, {pageSize};".format(**data))
         jsonData = []

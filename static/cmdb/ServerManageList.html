@@ -280,13 +280,18 @@
         ajaxPost({
             keywords: keywords,
             pageNumber: pageNum,
+            pageSize: pageList,
+            orderProperty: sortWord,
+            orderDirection: sortRules
         }, "http://127.0.0.1:5002/server/search", function (data) {
             if (data.data.length >= 1){
                 $('#data').empty();
                 $("#data_t").tmpl(data.data).appendTo($("#data"));
-                var search_result_length = data.data.length;
+                var search_result_length = data.matchRows;
                 $('#search_result').text("搜索完成，匹配" + search_result_length +"条记录！");
                 console.log($('#search_result'))
+                pageSize = Number(data.totalPages);
+                $("#pageNum").text(data.totalPages);
             }else {
                 alert('未找到关键字!')
             }

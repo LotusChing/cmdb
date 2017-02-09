@@ -116,15 +116,23 @@ def reports(request):
 def search(request):
     try:
         req_data = dict(ImmutableMultiDict(request.form))
-        keywords = req_data['keywords'] * 4
-        data = util.SQL("select * from server s where s.os like '%{}%' or s.ip like '%{}%' or s.hostname like '%{}%' or s.manufacturer like '%{}%';".format(*keywords))
+        pageNumber = req_data['pageNumber'][0]
+        pageSize = req_data['pageSize'][0]
+        start_pos = (int(pageNumber) - 1) * int(pageSize)
+        data = {
+            'keywords': req_data['keywords'][0],
+            'start_pos': start_pos,
+            'pageSize': pageSize
+        }
+        count_data = util.SQL("select count(id) from server s where s.os like '%{keywords}%' or s.ip like '%{keywords}%' or s.hostname like '%{keywords}%' or s.manufacturer like '%{keywords}%';".format(**data))[0][0]
+        data = util.SQL("select * from server s where s.os like '%{keywords}%' or s.ip like '%{keywords}%' or s.hostname like '%{keywords}%' or s.manufacturer like '%{keywords}%' limit {start_pos}, {pageSize};".format(**data))
         jsonData = []
         for row in data:
             idc_data = util.SQL('select name from idc where id="{}"'.format(row[1]))
             myjson = {'id': row[0], 'idc_name': idc_data[0][0],  'os': row[2], 'ip': row[3], 'hostname': row[4], 'cpu': row[5], 'memory':row[6], 'disk':row[7],'net_type':row[8],'server_type':row[9],'manufacturer':row[10], 'model':row[11],'sn':row[12],'uuid':row[13],'sku':row[14]}
             jsonData.append(myjson)
-        print(jsonData)
-        return json.dumps({'code': 1, 'data': jsonData})
+        totalPages = int(count_data) // int(pageSize)
+        return json.dumps({'code': 1, 'data': jsonData, 'matchRows':count_data, 'totalPages': totalPages if int(count_data)% int(pageSize) == 0 else totalPages + 1})
     except Exception as f:
         return json.dumps({'code': 0, 'info': f}, encoding='utf8')
 

@@ -124,63 +124,38 @@ function page(num, str) {
 	if (str) {
 		pageNum = parseInt(num);
 		console.log('页数', pageNum)
-	} else {
+	}else {
 		console.log($('#searchTxt').val().length)
+        if (num == "first") {
+            pageNum = 1;
+        }
+        if (num == "prev") {
+            console.log(pageNum);
+            if(pageNum <= 1){
+                pageNum = 1;
+                return false;
+            }else {
+                pageNum = pageNum - 1;
+            }
+        }
+        if (num == "next") {
+            if(pageNum >=pageSize){
+                pageNum = pageSize;
+                return false;
+            }else {
+                pageNum = pageNum + 1;
+            }
+            console.log("当前页数", pageNum);
+            console.log("页数",pageSize)
+        }
+        if (num == "last") {
+            pageNum = pageSize;
+        }
         if ($('#searchTxt').val().length < 1){
             console.log('!!!Inital!!!')
-            if (num == "first") {
-                pageNum = 1;
-            }
-            if (num == "prev") {
-                console.log(pageNum);
-                if(pageNum <= 1){
-                    pageNum = 1;
-                    return false;
-                }else {
-                    pageNum = pageNum - 1;
-                }
-            }
-            if (num == "next") {
-                if(pageNum >=pageSize){
-                    pageNum = pageSize;
-                    return false;
-                }else {
-                    pageNum = pageNum + 1;
-                }
-                console.log("当前页数", pageNum);
-                console.log("页数",pageSize)
-            }
-            if (num == "last") {
-                pageNum = pageSize;
-            }
             init();
 		}else{
         	console.log('!!!Search!!!')
-            if (num == "first") {
-                pageNum = 1;
-            }
-            if (num == "prev") {
-                console.log(pageNum);
-                if(pageNum <= 1){
-                    pageNum = 1;
-                    return false;
-                }else {
-                    pageNum = pageNum - 1;
-                }
-            }
-            if (num == "next") {
-                if(pageNum >=pageSize){
-                    pageNum = pageSize;
-                    return false;
-                }else {
-                    pageNum = pageNum + 1;
-                }
-                console.log("当前页数", pageNum);
-                console.log("页数",pageSize)
-            }
-            if (num == "last") {
-                pageNum = pageSize;
-            }
         	search();
 		}
 	}
@@ -225,7 +200,13 @@ function sortData(field) {
 
 function jumpTo() {
 	pageNum = parseInt($("#pageTo").val());
-	init();
+    if ($('#searchTxt').val().length < 1){
+        console.log('!!!Inital!!!')
+        init();
+    }else{
+        console.log('!!!Search!!!')
+        search();
+    }
 	return false;
 
 }

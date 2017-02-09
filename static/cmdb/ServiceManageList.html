@@ -87,9 +87,9 @@
                                 <th width="8%" onclick="sortData('name')">name</th>
                                 <th width="6%" onclick="sortData('service_type')">service_type</th>
                                 <th width="10%" onclick="sortData('port')">port</th>
-                                <th width="12%" onclick="sortData('path')">path</th>
+                                <th width="10%" onclick="sortData('path')">path</th>
                                 <th width="20%" onclick="sortData('path')">commands</th>
-                                <th width="34%" onclick="sortData('commands')">remark</th>
+                                <th width="36%" onclick="sortData('commands')">remark</th>
                                 <th>操作</th>
                             </tr>
                             </thead>
@@ -195,7 +195,7 @@
             pageSize: pageList,
             orderProperty: sortWord,
             orderDirection: sortRules
-        }, "http://127.0.0.1:5002/service/list", function (data) {
+        }, "http://192.168.1.150:5002/service/list", function (data) {
              //console.log("数据",JSON.stringify(data));
              console.log("数据",data.totalPages);
             $("#data_t").tmpl(data.data).appendTo($("#data"));
@@ -206,7 +206,7 @@
         // 获取idc机房数据，填充进下拉框
         ajaxPost({
             // no post data
-        }, "http://127.0.0.1:5002/idc/list", function (data) {
+        }, "http://192.168.1.150:5002/idc/list", function (data) {
             // console.log("IDC数据",JSON.stringify(data));
             $("#filter_key_idc_tmpl").tmpl(data.data).appendTo($("#filter_key_idc"));
         });
@@ -219,7 +219,7 @@
                 btn: ['删除', '取消'], //按钮
                 shade: false
             }, function () {
-                ajaxPost($checkedIds.serialize(), "http://127.0.0.1:5002/service/delete", function (data) {
+                ajaxPost($checkedIds.serialize(), "http://192.168.1.150:5002/service/delete", function (data) {
                     // console.log(data);
                     parent.layer.msg('已删除', {
                         icon: 1
@@ -249,7 +249,7 @@
         }, function () {
             ajaxPost({
                 ids: id
-            }, "http://127.0.0.1:5002/service/delete", function (data) {
+            }, "http://192.168.1.150:5002/service/delete", function (data) {
                 // console.log(data);
                 //alert(JSON.stringify(data));
                 parent.layer.msg('已删除', {
@@ -278,7 +278,7 @@
             orderProperty: sortWord,
             orderDirection: sortRules,
             keywords: keywords
-        }, "http://127.0.0.1:5002/service/search", function (data) {
+        }, "http://192.168.1.150:5002/service/search", function (data) {
             if (data.data.length >= 1){
                 $('#data').empty();
                 $("#data_t").tmpl(data.data).appendTo($("#data"));

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>更新数据</title>
+    <!--<link rel="shortcut icon" href="favicon.ico">-->
+    <link href="../css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+    <link href="../css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <link href="../css/plugins/iCheck/custom.css" rel="stylesheet">
+    <link href="../css/animate.min.css" rel="stylesheet">
+    <link href="../css/style.min862f.css?v=4.1.0" rel="stylesheet">
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-10">
+            <div class="ibox-content">
+                <div class="row">
+                    <h3>主机信息</h3>
+                    <hr>
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-10">
+                        <form role="form" class="form-horizontal" id="inputForm">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">服务器：</label>
+                                <div class="col-sm-10">
+                                    <select class="form-control" id="servers">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">服务名：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" placeholder="如:Nginx" class="form-control"
+                                           id="name" minlength="2" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">服务类型：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" placeholder="如:Web DB" class="form-control"
+                                           id="service_type" name="service_type" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">端口：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" placeholder="如:80或者0" class="form-control"
+                                           id="port" name="port" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">路径：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" placeholder="如: /" class="form-control"
+                                           id="path" name="path" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">启动命令：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" placeholder="如:/sbin/nginx" class="form-control"
+                                           id="commands" name="commands" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">备注：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" placeholder="如: 服务作用" class="form-control"
+                                           id="remark" name="remark" required/>
+                                </div>
+                            </div>
+                            <hr>
+                            <div id="content"></div>
+                            <div class="btn btn-primary" onclick="save()">
+                                <i class="fa fa-search"></i>&nbsp;保存
+                            </div>
+                            <div class="btn btn-success" onclick="history.back(); return false;">
+                                <i class="fa fa-backward"></i>&nbsp;返回
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../js/jquery.min.js?v=2.1.4"></script>
+<script src="../js/jquery.validate.js"></script>
+<script src="../js/bootstrap.min.js?v=3.3.6"></script>
+<script src="../js/content.min.js?v=1.0.0"></script>
+<script src="../js/plugins/iCheck/icheck.min.js"></script>
+<script src="../js/base.js"></script>
+<script src="../js/jquery.tmpl.js"></script>
+<script id="data_t" type="text/x-jquery-tmpl">
+	<option id=${hostname}>${hostname}</option>
+</script>
+<script>
+    var id;
+    var hostname;
+    $(document).ready(function () {
+        id = sessionStorage.airportID;
+        ajaxPost({
+            pageNumber: pageNum,
+            pageSize: pageList,
+            orderProperty: sortWord,
+            orderDirection: sortRules
+        }, "http://127.0.0.1:5002/server/list", function (data) {
+            //console.log("数据", JSON.stringify(data));
+            //$("servers option").val(data.data)
+            $("#data_t").tmpl(data.data).appendTo($("#servers"));
+        });
+
+        ajaxPost({
+            id: id
+        }, "http://127.0.0.1:5002/service/get_one_service", function (data) {
+            var obj = data.data;
+            for (var k in obj) {
+                $("#" + k).val(obj[k]);
+            }
+            $('#' + data.data['hostname']).attr('selected', 'selected')
+        });
+        $(".i-checks").iCheck({
+            checkboxClass: "icheckbox_square-green",
+            radioClass: "iradio_square-green"
+        });
+        dataText()
+    });
+
+    function save() {
+        ajaxPost({
+            id : id,
+            hostname: $("#servers option:selected").text(),
+            name: $("#name ").val(),
+            service_type: $("#service_type").val(),
+            port: $("#port").val(),
+            path: $("#path").val(),
+            commands: $("#commands").val(),
+            remark: $("#remark").val()
+        }, "http://127.0.0.1:5002/service/update", function(data) {
+            //console.log(data);
+            if (data.code == 1) {
+                location.href = "ServiceManageList.html";
+            } else {
+                alert("修改失败");
+            }
+        });
+    }
+</script>
+</body>
+</html>

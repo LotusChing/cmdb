@@ -6,7 +6,6 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config():
     SECRET_KEY = os.environ.get("SECRET_KDY") or "abcdefg"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
     @staticmethod
     def init_app(app):
         pass
@@ -14,7 +13,8 @@ class Config():
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    
+    SQLALCHEMY_ECHO = True
+    SQLALCHEMY_DATABASE_URI = 'mysql://lotus:ching@192.168.2.20/cmdb'
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)

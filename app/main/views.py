@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 import json
 
-from flask import request, current_app
+from flask import request, current_app, render_template
 from . import main
 from app.base import JsonRpc
 
@@ -9,7 +9,7 @@ from app.base import JsonRpc
 @main.route('/', methods=['GET', 'POST'])
 def index():
     current_app.logger.debug('访问首页.')
-    return 'Index.'
+    return render_template('public/dashboard.html')
 
 
 @main.route('/api', methods=['GET', 'POST'])
@@ -26,3 +26,8 @@ def api():
     else:
         current_app.logger.debug('用户请求的Content-Type为：{}，不予处理.'.format(None if request.content_type == '' else request.content_type))
         return '200', 400
+
+
+@main.route('/dashboard', methods=['GET'])
+def dashboard():
+    return render_template('public/dashboard.html')

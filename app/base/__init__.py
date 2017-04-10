@@ -182,9 +182,8 @@ class JsonRpc():
         Api权限验证，白名单中的Api不需要权限验证
         :return: True/False
         """
-        white_list = ['user.log', 'api.info', 'lotus.go', 'lotus.no', 'idc.create']
+        white_list = ['user.log', 'api.info', 'lotus.go', 'lotus.no', 'idc.create', 'idc.get', 'idc.update', 'idc.delete']
         if '{}.{}'.format(module, func) in white_list:
-            print('###模块名称', module, func)
             return False
         return True
 
@@ -228,11 +227,11 @@ class JsonRpc():
             else:
                 response.errorCode = 123
                 response.errorMessage = '{}下{}不能被调用'.format(module_name, func_name)
-                current_app.logger.debug('模块 {} 方法 {} 调用失败，已返回数据: {}'.format(module_name, func_name, response.errorMessage))
+                current_app.logger.warning('模块 {} 方法 {} 调用失败，已返回数据: {}'.format(module_name, func_name, response.errorMessage))
         except Exception as e:
             response.errorCode = -1
             response.errorMessage = str(e)
-            current_app.logger.debug('模块 {} 方法 {} 调用异常，已返回数据: {}'.format(module_name, func_name, response.errorMessage))
+            current_app.logger.warning('模块 {} 方法 {} 调用异常，已返回数据: {}'.format(module_name, func_name, e))
         return response
 
     def process_result(self, response):

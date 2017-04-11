@@ -72,6 +72,25 @@ def test_idc_get():
     print("response的内容：{}".format(str(r.content, 'utf-8')))
 
 
+def test_idc_delete():
+    header = {
+        "content-type": "application/json"
+    }
+    format_Request = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "idc.delete",
+        "auth": '',
+        "params": {
+            'where': {
+                'id': 2
+            }
+        }
+    }
+    print("======发送正常数据测试返回执行结果：======")
+    r = requests.post(url, headers=header, data=json.dumps(format_Request))
+    print("response的状态：{}".format(r.status_code))
+    print("response的内容：{}".format(str(r.content, 'utf-8')))
+
 if __name__ == '__main__':
-    data = test_idc_get()
-    print(data)
+    test_idc_delete()

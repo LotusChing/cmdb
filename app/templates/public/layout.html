@@ -106,12 +106,12 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="/static/js/bootstrap.min.js"></script>
     <script src="/static/js/sweetalert.min.js"></script>
+    <script src="/static/js/base.js"></script>
     <script>
     function left_table(tit, sel, view){
         $("#"+tit).removeClass("collapsed").attr("aria-expanded","true");
         $("#"+sel).attr("aria-expanded","true").addClass("in");
         $("#"+view).addClass("active");
-
     }
     </script>
     {% block js %}

@@ -35,11 +35,6 @@ def get(**kwargs):
     order_by = kwargs.get('order_by', 'id desc')
     where = kwargs.get('where', {})
 
-
-# 验证
-    # 验证output列是否存在
-    # 验证where列是否存在
-    # 验证order_by列是否存在，以及排序规则是否正确
     '''
     验证Output列
     1. 判断output类型
@@ -119,7 +114,6 @@ def update(**kwargs):
     else:
         current_app.logger.warning('类型错误：id应该为int类型')
         raise Exception('type error: id应该为int类型')
-
     res = db.session.query(Idc).filter_by(**where).update(data)
     try:
         db.session.commit()
@@ -131,4 +125,26 @@ def update(**kwargs):
 
 
 def delete(**kwargs):
-    pass
+    where = kwargs.get('where', {})
+    if not where:
+        current_app.logger.warning('参数错误：更新需要提供where条件.')
+        raise Exception('params error: 更新需要提供where条件.')
+    if not where.get('id', None):
+        current_app.logger.warning('参数错误：更新需要提供where条件.')
+        raise Exception('params error: 需要提供id为更新条件')
+
+    if str(where.get('id')).isdigit():
+        if int(where.get('id')) <= 0:
+            current_app.logger.warning('类型错误：id的值应该为大于0的整数')
+            raise Exception('type error: id的值应该为大于0的整数')
+    else:
+        current_app.logger.warning('类型错误：id应该为int类型')
+        raise Exception('type error: id应该为int类型')
+
+    res = db.session.query(Idc).filter_by(**where).delete()
+    try:
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.warning('删除失败：{}'.format(e))
+        raise Exception('delete commit error')
+    return res

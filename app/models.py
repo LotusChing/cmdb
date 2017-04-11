@@ -2,6 +2,7 @@
 # coding:utf-8
 from app import db
 
+
 class Idc(db.Model):
     __tablename__                  = 'idc'
     id                                         = db.Column(db.Integer, primary_key=True)
@@ -14,4 +15,3 @@ class Idc(db.Model):
     user_phone                         = db.Column(db.String(20), nullable=False)
     rel_cabinet_num                = db.Column(db.Integer, nullable=False)
     pact_cabinet_num              = db.Column(db.Integer, nullable=False)
-

@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from flask import request, render_template
 from . import main
 import app.utils
+import json
 
 
 @main.route('/resources/idc/', methods=['GET'])
@@ -32,3 +33,42 @@ def resources_idc_update():
         return render_template('public/success.html', next_url='/resources/idc/')
     else:
         return render_template('public/error.html', next_url='/resources/idc/')
+
+
+@main.route('/resources/idc/add/', methods=['GET'])
+def resources_idc_add():
+        return render_template('resources/server_add_idc.html',
+                               title='添加IDC',
+                               show_resource=True,
+                               show_idc_list=True)
+
+
+@main.route('/resources/idc/doadd/', methods=['POST'])
+def resources_idc_doadd():
+    params = request.form.to_dict()
+    res = app.utils.api_action('idc.create', params)
+    if res:
+        return render_template('public/success.html',
+                               next_url='/resources/idc/',
+                               title='操作成功')
+    else:
+        return render_template('public/error.html',
+                               next_url='/resources/idc/',
+                               title='操作失败')
+
+
+@main.route('/resources/idc/delete/', methods=['POST'])
+def resources_idc_delete():
+    try:
+        data = request.form.to_dict()
+        id = data.pop('id')
+        res = app.utils.api_action('idc.delete', {"where": {'id': id}})
+        data = {
+            'code': res
+        }
+    except Exception as e:
+        data = {
+            'code': 0,
+            'errMsg': str(e)
+        }
+    return json.dumps(data)

@@ -46,7 +46,7 @@
                     <td>{{ idc.pact_cabinet_num }}</td>
                     <td>
                         <a href="/resources/idc/modify/{{ idc.id }}" class="btn btn-primary btn_mod">修改</a>
-                        <a href="#" idc_id="{{ idc.id }}" class="btn btn-danger btn_mod btn_delete" onclick="del({{ idc.id }})">删除</a>
+                        <a href="#" idc_id="{{ idc.id }}" class="btn btn-danger btn_mod btn_delete">删除</a>
                     </td>
                 </tr>
             {% endfor %}
@@ -56,7 +56,9 @@
 {% endblock %}
 {% block js %}
     <script>
-        function del(id) {
+        $('.btn_delete').click(function(){
+            var obj = $(this);
+            var id = obj.attr('idc_id');
             swal({
                     title: "是否确认删除?",
                     text: "!!!即将删除这条IDC信息!!!",
@@ -67,27 +69,17 @@
                     cancelButtonText: "返回",
                     closeOnConfirm: false
                 }, function(){
-                    ajaxPost({
-                        id: id
-                    }, '/resources/idc/delete/', function (data) {
-                        console.log('Data: ', data);
+                    $.post('/resources/idc/delete/', {id: id}, function (data) {
+                        data = JSON.parse(data);
                         if (data.code == 1){
-                            swal("删除成功!", "该条IDC信息已经成功删除!", "success");
-                            /*
-                            Reload to refresh idc list
-                            setTimeout(function(){
-                                location.reload()
-                            }, 1000)
-                            */
-
-                            /*  remove already delete item */
-                            $("tr[idc_id=" + id +"]").remove()
+                            $(obj.parents('tr')).remove();
+                            swal("删除成功!", "该条IDC信息已经成功删除!", "success")
                         }else {
                             swal("删除失败", "该条IDC信息删除出现错误", "error");
                         }
                     })
-                });
-        }
+                })
+        })
     </script>
 {% endblock %}
 

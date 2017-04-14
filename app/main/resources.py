@@ -132,7 +132,29 @@ def resources_server_doadd():
     params = request.form.to_dict()
     server_tb = DBBaseClass('Server')
     res = server_tb.create(params)
-    jump_url = '/resources/idc/'
+    jump_url = '/resources/server/list'
+    return app.utils.jump(res, success_url=jump_url, error_url=jump_url)
+
+
+@main.route('/resources/server/modify/<int:server_id>', methods=['GET'])
+def resources_server_modify(server_id):
+    server_tb = DBBaseClass('server')
+    res = server_tb.get({'where': {'id': server_id}})
+    if res:
+        return render_template('resources/server_modify.html',
+                               title='Server修改',
+                               server=res[0])
+    return render_template('404.html')
+
+
+@main.route('/resources/server/update', methods=['POST'])
+def resources_server_update():
+    data = request.form.to_dict()
+    id = data.pop('id')
+    current_app.logger.debug('进入server/update路由')
+    server_tb = DBBaseClass('server')
+    res = server_tb.update({'data': data, "where": {'id': id}})
+    jump_url = '/resources/server/list'
     return app.utils.jump(res, success_url=jump_url, error_url=jump_url)
 
 

@@ -1,72 +1,92 @@
 # coding: utf8
 from __future__ import unicode_literals
-from flask import request, render_template, current_app
+from flask import request, render_template, current_app, redirect
 from . import main
-import app.utils
+import hashlib
 import json
-from app.modules.base_class import  DBBaseClass
+from app.modules.base_class import DBBaseClass
+
 '''
-    IDC
+    People
 '''
 
 
-@main.route('/resources/idc/', methods=['GET'])
-def resources_idc():
-    idc_tb = DBBaseClass('idc')
-    res = idc_tb.get({'where': {'status': 1}})
-    return render_template('resources/server_idc_list.html',
-                           title='IDC信息',
-                           idcs=res)
-
-
-@main.route('/resources/idc/modify/<int:idc_id>', methods=['GET'])
-def resources_idc_modify(idc_id):
-    idc_tb = DBBaseClass('idc')
-    res = idc_tb.get({'where': {'id': idc_id}})
-    if res:
-        return render_template('resources/server_idc_modify.html',
-                               title='IDC修改',
-                               idc=res[0])
-    return render_template('404.html')
-
-
-@main.route('/resources/idc/update', methods=['POST'])
-def resources_idc_update():
-    data = request.form.to_dict()
-    id = data.pop('id')
-    current_app.logger.debug('进入idc/update路由')
-    idc_tb = DBBaseClass('idc')
-    res = idc_tb.update({'data': data, "where": {'id': id}})
-    jump_url = '/resources/idc/'
-    return app.utils.jump(res, success_url=jump_url, error_url=jump_url)
-
-
-@main.route('/resources/idc/add/', methods=['GET'])
-def resources_idc_add():
-        return render_template('resources/server_add_idc.html',
-                               title='添加IDC',
-                               show_resource=True,
-                               show_idc_list=True)
-
-
-@main.route('/resources/idc/doadd/', methods=['POST'])
-def resources_idc_doadd():
-    params = request.form.to_dict()
-    idc_tb = DBBaseClass('Idc')
-    res = idc_tb.create(params)
-    jump_url = '/resources/idc/'
-    return app.utils.jump(res, success_url=jump_url, error_url=jump_url)
-
-
-@main.route('/resources/idc/delete/', methods=['POST'])
-def resources_idc_delete():
-    try:
-        data = request.form.to_dict()
-        id = data.pop('id')
-        idc_tb = DBBaseClass('idc')
-        res = idc_tb.update({'data': {'status': 0}, "where": {'id': id}})
+@main.route('/people', methods=['GET', 'POST'])
+def people_list():
+    if request.method == 'GET':
+        print('Args: ', request.args)
+        print('Data: ', request.data)
+        print('Json: ', request.json)
+        print('Form: ', request.form)
+        return render_template('cmdb/people_list.html')
+    else:
+        current_app.logger.debug('People POST Method...')
+        current_app.logger.debug('Data: {}'.format(request.json))
+        page_number = request.json.get('pageNumber')
+        page_size = request.json.get('pageSize')
+        start_offset = (int(page_number) - 1) * int(page_size)
+        people_tb = DBBaseClass('people')
+        peoples_data = people_tb.get({'output': ['id', 'name', 'nickname', 'phone', 'email', 'role.name', 'remark'], 'where': {'status': 1}, 'limit': [start_offset, page_size]})
+        total_data = people_tb.get({'output': ['id'], 'where': {'status': 1}, 'limit': [0, 999999999999]})
         data = {
-            'code': int(res)
+            'total': len(total_data),
+            'rows': peoples_data
+        }
+        current_app.logger.info(json.dumps(data))
+        return json.dumps(data)
+
+
+@main.route('/people/add', methods=['GET', 'POST'])
+def people_add():
+    try:
+        if request.method == 'GET':
+            role_tb = DBBaseClass('role')
+            roles = role_tb.get()
+            return render_template('cmdb/PeopleManageAdd.html',
+                                   roles=roles)
+        else:
+            data = json.loads(request.data.decode(), encoding='utf8')
+            md5 = hashlib.md5('LotusChing'.encode())
+            md5.update(data['password'].encode())
+            data['password'] = md5.hexdigest()
+            people_tb = DBBaseClass('people')
+            res = people_tb.create(data)
+            if res:
+                data = {
+                    'code': 1
+                }
+    except Exception as e:
+        data = {
+            'code': 0,
+            'errMsg': str(e)
+        }
+    return json.dumps(data)
+
+
+@main.route('/people/update/<int:people_id>', methods=['GET', 'POST'])
+def people_update(people_id):
+    people_tb = DBBaseClass('people')
+    if request.method == 'GET':
+        people_data = people_tb.get({'where': {'id': people_id}})
+        return render_template('cmdb/PeopleManageUpdate.html',
+                               people=people_data[0])
+    else:
+        data = request.form.to_dict()
+        print(data)
+        res = people_tb.update({'data': data, "where": {'id': people_id}})
+        if res:
+            return redirect('/people')
+
+
+@main.route('/people/delete', methods=['POST'])
+def people_delete():
+    try:
+        ids = json.loads(request.data.decode(), encoding='utf8')['id']
+        people_tb = DBBaseClass('people')
+        for id in ids:
+            people_tb.update({'data': {'status': 0}, "where": {'id': id}})
+        data = {
+            'code': 1
         }
     except Exception as e:
         data = {
@@ -76,303 +96,167 @@ def resources_idc_delete():
     return json.dumps(data)
 
 '''
+    IDC
+'''
+
+
+@main.route('/idc', methods=['GET', 'POST'])
+def idc_list():
+    try:
+        if request.method == 'GET':
+            return render_template('cmdb/idc_list.html')
+        else:
+            current_app.logger.debug('IDC POST Method...')
+            current_app.logger.debug('Data: {}'.format(request.json))
+            page_number = request.json.get('pageNumber')
+            page_size = request.json.get('pageSize')
+            start_offset = (int(page_number) - 1) * int(page_size)
+            idc_tb = DBBaseClass('idc')
+            idcs_data = idc_tb.get({'output': ['id', 'name', 'idc_name', 'address', 'idc_people.name', 'idc_people.phone', 'idc_interface', 'idc_phone', 'rel_cabinet_num'], 'where': {'status': 1}, 'limit': [start_offset, page_size]})
+            total_data = idc_tb.get({'output': ['id'], 'where': {'status': 1}, 'limit': [0, 999999999999]})
+            data = {
+                'total': len(total_data),
+                'rows': idcs_data
+            }
+            current_app.logger.info('返回数据: {}'.format(json.dumps(data)))
+            return json.dumps(data)
+    except Exception as e:
+        current_app.logger.warning('idc list with error, msg: {}'.format(e))
+
+
+@main.route('/idc/update/<int:idc_id>', methods=['GET', 'POST'])
+def idc_update(idc_id):
+    idc_tb = DBBaseClass('idc')
+    if request.method == 'GET':
+        idc_data = idc_tb.get({'where': {'id': idc_id}})
+        if idc_data:
+            try:
+                people_tb = DBBaseClass('people')
+                people_data = people_tb.get({'output': ['id', 'name', 'phone'], 'where': {'id': idc_data[0]['people_id']}})
+                peoples_data = people_tb.get({'output': ['id', 'name'], 'where': {'status': 1}})
+                current_app.logger.debug('Start Render Update Template...')
+                return render_template('cmdb/IDCManageUpdate.html',
+                                       idc=idc_data[0],
+                                       people=people_data[0],
+                                       peoples=peoples_data)
+            except Exception as e:
+                current_app.logger.warning('IDC Update [GET] 出现错误：{}'.format(e))
+                return json.dumps({'code': 0, 'errMsg': str(e)})
+    else:
+        data = json.loads(request.data.decode(), encoding='utf8')
+        try:
+            idc_tb.update({'data': data, "where": {'id': idc_id}})
+            return json.dumps({'code': 1})
+        except Exception as e:
+            current_app.logger.warning('IDC Update [POST] 执行更新时出现错误：{}'.format(e))
+            return json.dumps({'code': 0, 'errMsg': str(e)})
+
+
+@main.route('/idc/delete', methods=['POST'])
+def idc_delete():
+    try:
+        ids = json.loads(request.data.decode(), encoding='utf8')['id']
+        idc_tb = DBBaseClass('idc')
+        for id in ids:
+            idc_tb.update({'data': {'status': 0}, "where": {'id': id}})
+        data = {
+            'code': 1
+        }
+    except Exception as e:
+        data = {
+            'code': 0,
+            'errMsg': str(e)
+        }
+    return json.dumps(data)
+
+
+@main.route('/idc/add', methods=['GET', 'POST'])
+def idc_add():
+    try:
+        if request.method == 'GET':
+            people_tb = DBBaseClass('people')
+            peoples = people_tb.get({'where': {'status': 1}})
+            return render_template('cmdb/IDCManageAdd.html',
+                                   peoples=peoples)
+        else:
+            data = json.loads(request.data.decode(), encoding='utf8')
+            idc_tb = DBBaseClass('Idc')
+            res = idc_tb.create(data)
+            if res:
+                return json.dumps({'code': 1})
+    except Exception as e:
+        return json.dumps({'code': 0, 'errMsg': str(e)})
+
+
+'''
     Server
 '''
 
 
-@main.route('/resources/server/list', methods=['GET'])
-def resources_server_list():
+@main.route('/server/report', methods=['POST'])
+def server_report():
+    data = json.loads(request.data.decode(), encoding='utf8')
     server_tb = DBBaseClass('server')
-    status_tb = DBBaseClass('status')
-    product_tb = DBBaseClass('product')
-    servers = server_tb.get()
-    status = status_tb.get()
-    products = product_tb.get()
-    return render_template('resources/server_list.html',
-                           title='服务器列表',
-                           servers=servers,
-                           status=status,
-                           products=products)
+    try:
+        current_app.logger.info('收到服务器汇报信息，正在提交至数据库')
+        server_tb.create(data)
+        current_app.logger.info('提交服务器汇报信息成功')
+        return json.dumps({'code': 1})
+    except Exception as e:
+        current_app.logger.warning('提交服务器汇报信息失败, 错误信息: {}'.format(e))
+        return json.dumps({'code': 0, 'errMsg': str(e)})
 
 
-@main.route('/resources/server/add/', methods=['GET'])
-def resources_server_add():
-    supplier_tb = DBBaseClass('supplier')
-    manufacturers_tb = DBBaseClass('manufacturers')
-    status_tb = DBBaseClass('status')
-    raid_tb = DBBaseClass('raid')
-    power = DBBaseClass('power')
-    raidtype_tb = DBBaseClass('raidtype')
-    product_tb = DBBaseClass('product')
-    idc_tb = DBBaseClass('idc')
-
-    manufacturers = manufacturers_tb.get()
-    suppliers = supplier_tb.get()
-    status = status_tb.get()
-    raids = raid_tb.get()
-    powers = power.get()
-    raidtypes = raidtype_tb.get()
-    idcs = idc_tb.get({'where': {'status': 1}})
-    products = product_tb.get( {'where': {'pid': 0}})
-
-    return render_template('resources/server_add.html',
-                           title='添加服务器',
-                           manufacturers=manufacturers,
-                           products=products,
-                           status=status,
-                           idc_info=idcs,
-                           raids=raids,
-                           powers=powers,
-                           raidtypes=raidtypes,
-                           suppliers=suppliers)
+@main.route('/server/add', methods=['GET', 'POST'])
+def server_add():
+    try:
+        if request.method == 'GET':
+            return render_template('cmdb/ServerManageAdd.html')
+        else:
+            current_app.logger.debug('开始载入json数据...')
+            data = json.loads(request.data.decode())
+            current_app.logger.debug('载入json数据完成...,数据：{} 类型：{}'.format(data, type(data)))
+            server_tb = DBBaseClass('server')
+            res = server_tb.create(data)
+            if res:
+                return json.dumps({'code': 1})
+    except Exception as e:
+        current_app.logger.warning(str(e))
+        return json.dumps({'code': 0, 'errMsg': str(e)})
 
 
-@main.route('/resources/server/doadd/', methods=['POST'])
-def resources_server_doadd():
-    params = request.form.to_dict()
-    server_tb = DBBaseClass('Server')
-    res = server_tb.create(params)
-    jump_url = '/resources/server/list'
-    return app.utils.jump(res, success_url=jump_url, error_url=jump_url)
-
-
-@main.route('/resources/server/modify/<int:server_id>', methods=['GET'])
-def resources_server_modify(server_id):
-    server_tb = DBBaseClass('server')
-    res = server_tb.get({'where': {'id': server_id}})
-    if res:
-        return render_template('resources/server_modify.html',
-                               title='Server修改',
-                               server=res[0])
-    return render_template('404.html')
-
-
-@main.route('/resources/server/update', methods=['POST'])
-def resources_server_update():
-    data = request.form.to_dict()
-    id = data.pop('id')
-    current_app.logger.debug('进入server/update路由')
-    server_tb = DBBaseClass('server')
-    res = server_tb.update({'data': data, "where": {'id': id}})
-    jump_url = '/resources/server/list'
-    return app.utils.jump(res, success_url=jump_url, error_url=jump_url)
-
+@main.route('/server', methods=['GET', 'POST'])
+def server_list():
+    try:
+        if request.method == 'GET':
+            return render_template('cmdb/server_list.html')
+        else:
+            current_app.logger.debug('People POST Method...')
+            current_app.logger.debug('Data: {}'.format(request.json))
+            page_number = request.json.get('pageNumber')
+            page_size = request.json.get('pageSize')
+            start_offset = (int(page_number) - 1) * int(page_size)
+            server_tb = DBBaseClass('server')
+            # servers_data = server_tb.get({'output': ['server_idc.name', 'server_product.name', 'hostname', 'os', 'manufacturers', 'server_model', 'server_people.name', 'last_op_time', 'status'], 'where': {'status': 1}, 'limit': [start_offset, page_size]})
+            servers_data = server_tb.get({'output': ['hostname', 'os', 'manufacturers', 'server_model','server_conn_people.name', 'status'], 'where': {'status': 1}, 'limit': [start_offset, page_size]})
+            total_data = server_tb.get({'output': ['id'], 'where': {'status': 1}, 'limit': [0, 999999999999]})
+            data = {
+                'total': len(total_data),
+                'rows': servers_data
+            }
+        current_app.logger.info(json.dumps(data))
+        return json.dumps(data)
+    except Exception as e:
+        current_app.logger.warning('server with error, msg: {}'.format(e))
+        return json.dumps({'code': 0, 'errMsg': str(e)})
 
 '''
-    Manufacturers
+    Test Route
 '''
 
 
-@main.route('/resources/manufacturers/add/', methods=['GET'])
-def resources_manufacturers_add():
-    return render_template('resources/server_add_manufacturers.html',
-                           title='添加制造商')
-
-
-@main.route('/resources/server/manufacturers/doadd/', methods=['POST'])
-def resources_manufacturers_doadd():
-    params = request.form.to_dict()
-    manufacturers_tb = DBBaseClass('manufacturers')
-    res = manufacturers_tb.create(params)
-    jump_url = '/resources/server/add/'
-    return app.utils.jump(res, success_url=jump_url, error_url=jump_url)
-
-'''
-    Server Type
-'''
-
-
-@main.route('/resources/server/servertype/add/', methods=['GET'])
-def resources_server_servertype_add():
-    manufacturers_tb = DBBaseClass('manufacturers')
-    manufacturers = manufacturers_tb.get()
-    return render_template('resources/server_servertype_add.html',
-                           title='添加服务器型号',
-                           manufacturers=manufacturers)
-
-
-@main.route('/resources/server/servertype/doadd/', methods=['POST'])
-def resources_server_servertype_doadd():
-    params = request.form.to_dict()
-    servertype_tb = DBBaseClass('servertype')
-    res = servertype_tb.create(params)
-    jump_url = '/resources/server/add/'
-    return app.utils.jump(res, success_url=jump_url, error_url=jump_url)
-
-
-@main.route('/resources/server/servertype/list/', methods=['POST'])
-def resources_servertype_list():
-    current_app.logger.debug('进入ServerType路由...')
-    params = request.form.to_dict()
-    if params:
-        servertype_tb = DBBaseClass('servertype')
-        servertypes = servertype_tb.get({'where': params})
-        return json.dumps(servertypes)
-
-
-'''
-    业务线/产品线
-'''
-
-
-@main.route('/resources/server/product/add/', methods=['GET'])
-def resources_server_product_add():
-    product_tb = DBBaseClass('product')
-    products = product_tb.get()
-    return render_template('resources/server_product_add.html',
-                           title='添加业务线',
-                           products=products)
-
-
-@main.route('/resources/server/product/doadd/', methods=['POST'])
-def resources_server_product_doadd():
-    params = request.form.to_dict()
-    product_tb = DBBaseClass('product')
-    res = product_tb.create(params)
-    jump_url = '/resources/server/add/'
-    return app.utils.jump(res, jump_url, jump_url)
-
-
-@main.route('/resources/server/product/get_server_product/', methods=['POST'])
-def resources_server_product_get_server_product():
-    params = request.form.to_dict()
-    if params:
-        product_tb = DBBaseClass('product')
-        res = product_tb.get({'output': ['id', 'service_name', 'pid'], 'where': params})
-        return json.dumps(res)
-
-
-'''
-    服务器状态
-'''
-
-
-@main.route('/resources/status/add/', methods=['GET'])
-def resources_server_status_add():
-    return render_template('resources/server_status_add.html',
-                           title='添加服务器状态')
-
-
-@main.route('/resources/status/doadd/', methods=['POST'])
-def resources_server_status_doadd():
-    params = request.form.to_dict()
-    status_tb = DBBaseClass('status')
-    res = status_tb.create(params)
-    jump_url = '/resources/server/add/'
-    return app.utils.jump(res, jump_url, jump_url)
-
-
-'''
-    机柜信息
-'''
-
-
-@main.route('/resources/cabinet/add/', methods=['GET'])
-def resources_server_cabinet_add():
-    idcs_tb = DBBaseClass('idcs')
-    power_tb = DBBaseClass('power')
-    idcs = idcs_tb.get({'where': {'status': 1}})
-    powers = power_tb.get()
-    return render_template('resources/server_cabinet_add.html',
-                           title='添加机柜',
-                           idcs=idcs,
-                           powers=powers)
-
-
-@main.route('/resources/cabinet/doadd/', methods=['POST'])
-def resources_server_cabinet_doadd():
-    params = request.form.to_dict()
-    cabinet_tb = DBBaseClass('cabinet')
-    res = cabinet_tb.create(params)
-    jump_url = '/resources/server/add/'
-    return app.utils.jump(res, jump_url, jump_url)
-
-
-@main.route('/resources/cabinet/get_cabinet/', methods=['POST'])
-def resources_server_cabinet_get_cabinet():
-    params = request.form.to_dict()
-    current_app.logger.debug('Requests Params: {}'.format(params))
-    if params:
-        cabinet_tb = DBBaseClass('cabinet')
-        res = cabinet_tb.get({'where': params})
-        current_app.logger.debug('Cabinet Result: {}'.format(res))
-        return json.dumps(res)
-
-
-'''
-    电源功率
-'''
-
-
-@main.route('/resources/power/add/', methods=['GET'])
-def resources_server_power_add():
-    return render_template('resources/server_power_add.html',
-                           title='添加机柜')
-
-
-@main.route('/resources/power/doadd/', methods=['POST'])
-def resources_server_power_doadd():
-    params = request.form.to_dict()
-    power_tb = DBBaseClass('power')
-    res = power_tb.create(params)
-    jump_url = '/resources/server/add/'
-    return app.utils.jump(res, jump_url, jump_url)
-
-'''
-    Raid
-'''
-
-
-@main.route('/resources/server/raid/add/', methods=['GET'])
-def resources_server_raid_add():
-    return render_template('resources/server_raid_add.html',
-                           title='添加RAID')
-
-
-@main.route('/resources/server/raid/doadd/', methods=['POST'])
-def resources_server_raid_doadd():
-    params = request.form.to_dict()
-    raid_tb = DBBaseClass('raid')
-    res = raid_tb.create(params)
-    jump_url = '/resources/server/add/'
-    return app.utils.jump(res, jump_url, jump_url)
-
-
-'''
-    RAID Types
-'''
-
-
-@main.route('/resources/server/raidcardtype/add/', methods=['GET'])
-def resources_server_raidcardtype_add():
-    return render_template('resources/server_raidcardtype_add.html',
-                           title='添加RAID类型')
-
-
-@main.route('/resources/server/raidcardtype/doadd/', methods=['POST'])
-def resources_server_raidcardtype_doadd():
-    params = request.form.to_dict()
-    raidcardtype_tb = DBBaseClass('raidcardtype')
-    res = raidcardtype_tb.create(params)
-    jump_url = '/resources/server/add/'
-    return app.utils.jump(res, jump_url, jump_url)
-
-
-'''
-    供应商
-'''
-
-
-@main.route('/resources/server/supplier/add/', methods=['GET'])
-def resources_server_supplier_add():
-    return render_template('resources/server_supplier_add.html',
-                           title='添加供应商')
-
-
-@main.route('/resources/server/supplier/doadd/', methods=['POST'])
-def resources_server_supplier_doadd():
-    params = request.form.to_dict()
-    supplier_tb = DBBaseClass('supplier')
-    res = supplier_tb.create(params)
-    jump_url = '/resources/server/add/'
-    return app.utils.jump(res, jump_url, jump_url)
+@main.route('/test', methods=['GET'])
+def test():
+    test_tb = DBBaseClass('testserver')
+    res = test_tb.get({'output': ['id', 'test_server_product.name']})
+    return json.dumps(res)

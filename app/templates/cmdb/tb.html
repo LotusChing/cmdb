@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Export</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../../static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../static/css/plugins/bootstrap-table/bootstrap-table.css">
+    <link rel="stylesheet" href="http://rawgit.com/vitalets/x-editable/master/dist/bootstrap3-editable/css/bootstrap-editable.css">
+
+    <script src="../../static/js/jquery.min.js"></script>
+    <script src="../../static/js/bootstrap.min.js"></script>
+    <script src="../../static/js/plugins/bootstrap-table/bootstrap-table.js"></script>
+    <script src="../../static/js/plugins/bootstrap-table/bootstrap-table-export.js"></script>
+    <script src="../../static/js/plugins/bootstrap-table/bootstrap-table-editable.js"></script>
+    <script src="http://rawgit.com/vitalets/x-editable/master/dist/bootstrap3-editable/js/bootstrap-editable.js"></script>
+    <script src="http://rawgit.com/hhurz/tableExport.jquery.plugin/master/tableExport.js"></script>
+    <script src="../../static/js/ga.js"></script>
+
+</head>
+<body>
+<div class="container">
+    <h1>Export</h1>
+    <div id="toolbar">
+        <button id="button" class="btn btn-default">remove</button>
+    </div>
+    <div id="toolbar">
+        <select class="form-control">
+            <option value="">Export Basic</option>
+            <option value="all">Export All</option>
+            <option value="selected">Export Selected</option>
+        </select>
+    </div>
+    <table id="table"
+           data-show-export="true"
+           data-show-refresh="true"
+           data-show-toggle="true"
+           data-show-columns="true"
+           data-pagination="true"
+           data-click-to-select="true"
+           data-toolbar="#toolbar">
+        <thead>
+        <tr>
+            <th data-field="state" data-checkbox="true"></th>
+            <th data-field="id">ID</th>
+            <th data-field="name" data-editable="true">Item Name</th>
+            <th data-field="price" data-editable="true">Item Price</th>
+        </tr>
+        </thead>
+    </table>
+</div>
+<script type='text/javascript'>
+    $(window).load(function () {
+        var data = {{data|safe}};
+        var $table = $('#table');
+        $('#toolbar').find('select').change(function () {
+            $table.bootstrapTable('destroy').bootstrapTable({
+                data: data,
+                exportDataType: $(this).val()
+            });
+        });
+        $(function() {
+            $table.bootstrapTable({
+                data: data
+            });
+        });
+        $('#button').click(function () {
+            var ids = $.map($table.bootstrapTable('getSelections'), function (row) {
+                return row.id;
+            });
+            $table.bootstrapTable('remove', {
+                field: 'id',
+                values: ids
+            });
+        });
+    })
+</script>
+</body>
+</html>

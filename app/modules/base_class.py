@@ -9,6 +9,7 @@ class DBBaseClass(object):
         current_app.logger.debug('{}表实例化DBBaseClass'.format(self.obj.__name__))
 
     def create(self, data):
+        current_app.logger.debug('Create Data: {}'.format(data))
         if len(data.keys()) == 0:
             current_app.logger.warning('参数错误，参数不能为空')
             raise Exception('params error: 请传参数')
@@ -16,7 +17,7 @@ class DBBaseClass(object):
             if not hasattr(self.obj, field):
                 current_app.logger.warning('参数错误: {}表中没有{}列'.format(self.obj.__name__, field))
                 raise Exception('params error: {}表中没有{}列'.format(self.obj.__name__, field))
-            if not data.get(field, None):
+            if data.get(field) is None:
                 current_app.logger.warning('参数错误：{}表中{}列不能为空'.format(self.obj.__name__, field))
                 raise Exception('params error: {}表中{}列不能为空'.format(self.obj.__name__, field))
 
@@ -31,13 +32,16 @@ class DBBaseClass(object):
 
     def get(self, params={}):
         output = params.get('output', [])
-        limit = params.get('limit', 10)
-        order_by = params.get('order_by', 'id desc')
+        limit = params.get('limit', [0, 10])
+        order_by = params.get('order_by', 'id asc')
         where = params.get('where', {})
 
         '''验证limit类型'''
-        if not str(limit).isdigit():
+
+        if not isinstance(limit, list):
             raise Exception('type error: limit值必须为数字.')
+        else:
+            start_offset, page_size = limit
 
         '''验证输出列'''
         if not isinstance(output, list):
@@ -45,6 +49,7 @@ class DBBaseClass(object):
             raise Exception('output 必须为列表类型.')
 
         for field in output:
+            if '.' in field: continue
             if not hasattr(self.obj, field):
                 current_app.logger.warning('参数错误：{}表中没有{}列.'.format(self.obj.__name__, field))
                 raise Exception('params error: {}表中没有{}列。'.format(self.obj.__name__, field))
@@ -65,24 +70,34 @@ class DBBaseClass(object):
             raise Exception('params error: 排序字段{}不在idc表中.'.format(tmp_order_by[0]))
 
         '''执行SQL'''
-        current_app.logger.debug('{}: 开始执行Update SQL'.format(self.obj.__name__))
-        data = db.session.query(self.obj).filter_by(**where).order_by(order_by).limit(limit).all()
+        current_app.logger.debug('{}: 开始执行select SQL'.format(self.obj.__name__))
+        # data = db.session.query(self.obj).filter_by(**where).order_by(order_by).limit(limit).all()
+        data = db.session.query(self.obj).filter_by(**where).order_by(order_by).offset(start_offset).limit(page_size).all()
         current_app.logger.debug('执行SQL完成')
-        db.session.close()
-        current_app.logger.debug('关闭SQL Session')
 
         '''处理返回数据'''
+        current_app.logger.debug('处理返回数据.')
         res = []
         for obj in data:
+            current_app.logger.debug('Obj: {}  dir: {}'.format(obj, dir(obj)))
             if output:
                 tmp = {}
                 for output_field in output:
-                    tmp[output_field] = getattr(obj, output_field)
+                    if '.' in output_field:
+                        ref_tb_name,  ref_tb_field = output_field.split('.')
+                        current_app.logger.debug('table: {} field: {}'.format(ref_tb_name, ref_tb_field))
+                        ref_tb_obj = getattr(obj, ref_tb_name)
+                        current_app.logger.debug('tb obj: {} type: {}'.format(dir(ref_tb_obj), type(ref_tb_obj)))
+                        tmp[output_field.replace('.', '_')] = getattr(ref_tb_obj, ref_tb_field)
+                    else:
+                        tmp[output_field] = getattr(obj, output_field)
                 res.append(tmp)
             else:
                 tmp = obj.__dict__
                 tmp.pop('_sa_instance_state')
                 res.append(tmp)
+        db.session.close()
+        current_app.logger.debug('关闭SQL Session')
         return res
 
     def update(self, params):

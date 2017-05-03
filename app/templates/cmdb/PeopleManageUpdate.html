@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>更新数据</title>
+    <!--<link rel="shortcut icon" href="favicon.ico">-->
+    <link href="../../static/css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+    <link href="../../static/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <link href="../../static/css/plugins/iCheck/custom.css" rel="stylesheet">
+    <link href="../../static/css/animate.min.css" rel="stylesheet">
+    <link href="../../static/css/style.min862f.css?v=4.1.0" rel="stylesheet">
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-10">
+            <div class="ibox-content">
+                <div class="row">
+                    <h3>主机信息</h3>
+                    <hr>
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-10">
+                        <form action="/people/update/{{ people.id }}" method='post' role="form" class="form-horizontal" id="inputForm">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">姓名：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="name" name="name" value="{{ people.name }}" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">手机号：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="phone" name="phone" value="{{ people.phone }}" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">邮箱：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="email" name="email" value="{{ people.email }}" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">备注：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="remark" name="remark" value="{{ people.remark }}" required/>
+                                </div>
+                            </div>
+                            <hr>
+                            <div id="content"></div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-search"></i>&nbsp;保存
+                            </button>
+                            <div class="btn btn-success" onclick="history.back(); return false;">
+                                <i class="fa fa-backward"></i>&nbsp;返回
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../../static/js/jquery.min.js?v=2.1.4"></script>
+<script src="../../static/js/jquery.validate.js"></script>
+<script src="../../static/js/bootstrap.min.js?v=3.3.6"></script>
+<script src="../../static/js/content.min.js?v=1.0.0"></script>
+<script src="../../static/js/plugins/iCheck/icheck.min.js"></script>
+<script src="../../static/js/base.js"></script>
+<script src="../../static/js/jquery.tmpl.js"></script>
+<script>
+    var id;
+    $(document).ready(function () {
+        $(".i-checks").iCheck({
+            checkboxClass: "icheckbox_square-green",
+            radioClass: "iradio_square-green"
+        });
+        dataText();
+    });
+
+    function save() {
+        ajaxPost({
+            id : id,
+            name : $("#name").val(),
+            address : $("#address").val(),
+            remark: $("#remark").val()
+        }, "/people/update", function(data) {
+            //console.log(data);
+            if (data.code == 1) {
+                location.href = "/people";
+            } else {
+                alert("修改失败");
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

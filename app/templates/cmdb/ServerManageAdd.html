@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title>添加服务器</title>
+
+    <link rel="shortcut icon" href="../../static/favicon.ico"> <link href="../../static/css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../static/css/font-awesome.css?v=4.4.0" rel="stylesheet">
+    <link href="../../static/css/animate.css" rel="stylesheet">
+    <link href="../../static/css/plugins/codemirror/ambiance.css" rel="stylesheet">
+    <link href="../../static/css/style.css?v=4.1.0" rel="stylesheet">
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox ">
+                <div class="ibox-title">
+                    <h2>添加服务器</h2>
+                </div>
+
+                <div class="ibox-content">
+                    <p class="m-b-lg">
+                        请将以下命令粘贴至命令行中并执行，执行前请确保使用Python3，并且拥有以下模块
+                        <strong> psutil </strong> <strong> requests </strong> <strong> subprocess </strong></p>
+                        <div class="well m-b-lg"># curl -s http://120.24.80.34/scripts/test.py | python3</div>
+
+                    <p class="m-b-lg">执行成功请将结果粘贴下面框内，确认无误后点击<strong>提交</strong></p>
+                    <textarea id="server_data"></textarea>
+                    <div class="row text-center">
+                            <button id="commit" class="btn btn-primary btn-sm" style="margin-top: 15px" type="button"><i class="fa fa-check"></i>&nbsp;提交</button>
+                            <button id="cancel" class="btn btn-warning btn-sm" style="margin-top: 15px" type="button"><i class="fa fa-close"></i>&nbsp;取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 全局js -->
+<script src="../../static/js/jquery.min.js?v=2.1.4"></script>
+<script src="../../static/js/bootstrap.min.js?v=3.3.6"></script>
+
+<!-- Peity -->
+<script src="../../static/js/plugins/peity/jquery.peity.min.js"></script>
+
+<!-- Sweet alert -->
+<link href="../../static/css/plugins/sweetalert/sweetalert.css" rel="stylesheet">
+<script src="../../static/js/plugins/sweetalert/sweetalert.min.js"></script>
+
+<!-- CodeMirror -->
+<script src="../../static/js/plugins/codemirror/codemirror.js"></script>
+<link href="../../static/css/plugins/codemirror/codemirror.css" rel="stylesheet">
+<script src="../../static/js/plugins/codemirror/mode/javascript/javascript.js"></script>
+
+<!-- 自定义js -->
+<script src="../../static/js/content.js?v=1.0.0"></script>
+
+<script>
+    var server_data_area;
+    $(document).ready(function () {
+        server_data_area = CodeMirror.fromTextArea(document.getElementById("server_data"), {
+            lineNumbers: true,
+            matchBrackets: true,
+            mode: "application/ld+json"
+        });
+        console.log(server_data_area.getValue())
+    });
+
+    $('#commit').click(function () {
+        var server_data = JSON.parse(server_data_area.getValue());
+        console.log(server_data)
+        $.ajax({
+            type: 'POST',
+            url: '/server/add',
+            data: JSON.stringify(server_data),
+            dataType: 'json',
+            contentType: "application/json",
+            success: function (data) {
+                if (data.code == 1){
+                    swal({
+                        title: "添加成功",
+                        text: "该条服务器信息已经添加至CMDB中",
+                        type: "success"
+                    });
+                    server_data_area.setValue('');
+                }else {
+                    swal({
+                        title: "添加失败",
+                        text: "该条服务器信息未能成功添加至CMDB中",
+                        type: "warning"
+                    });
+                    console.log("添加IDC失败", "该条IDC信息删除出现错误", data);
+                }
+            }
+        })
+    });
+
+
+</script>
+
+</body>
+
+</html>

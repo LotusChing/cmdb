@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Real-Time Log</title>
+    <link href="../css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+    <link href="../css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <link href="../css/animate.min.css" rel="stylesheet">
+    <link href="../css/style.min862f.css?v=4.1.0" rel="stylesheet">
+    <style type="text/css">
+        .span-primary {
+            display: inline-block;
+            line-height: 30px;
+            padding: 0px 15px;
+            background-color: #1AB394;
+            border-radius: 5px;
+            margin: 0 15px;
+            color: white;
+        }
+        #log_content {
+            width: 1100px;
+        }
+        .iconButton.disabled {
+            color: #bababa;
+            cursor: default;
+            background: #eee;
+        }
+        th {
+            cursor: pointer;
+        }
+        div{ 
+            word-wrap: break-word; 
+            word-break: normal; 
+        }
+    </style>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/base.js"></script>
+<script src="../js/jquery.tmpl.js"></script>
+<script id="log_content_tmpl" type="text/x-jquery-tmpl">
+    {{each lines}}
+      <p> ${$value} </p>
+    {{/each}}
+</script>
+
+<script>
+    var position = 0;
+    var lines;
+    $(document).ready(function() {
+        setInterval("getlog()",2000)
+    });
+    function getlog() {
+        var project_name = $("#tomcat_project_log").val();
+//        console.log('Current Project: '+project_name);
+        ajaxPost({
+            offset: position,
+            project: project_name
+        }, "http://192.168.1.150:5002/logs/test", function (data) {
+//            console.log("数据", data.data);
+//            console.log('Current Position: ' + position);
+            position = data.data.offset;
+            lines = data.data.lines;
+            $("#log_content_tmpl").tmpl(data.data).appendTo($("#log_content"));
+        })
+    }
+
+    function clear_log() {
+        position = -1;
+        $('#log_content').empty();
+    }
+</script>
+
+<body>
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <form class="form-inline" role="form">
+                        <div class="form-group" style="border:1px solid #f1f1f2">
+                            <select class="form-control" id="tomcat_project_log" onchange="clear_log()">
+                                <option id="uair">uair</option>
+                                <option id="wbs">wbs</option>
+                                <option id="wec">wec</option>
+                            </select>
+                        </div>
+                        <div class="btn btn-primary" id="filter_button" onclick="clear_log()">清空</div>
+                    </form>
+                    <div id="log_content">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

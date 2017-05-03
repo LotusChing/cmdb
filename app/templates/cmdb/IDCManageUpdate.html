@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>更新数据</title>
+    <!--<link rel="shortcut icon" href="favicon.ico">-->
+    <link href="../../static/css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+    <link href="../../static/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <link href="../../static/css/plugins/iCheck/custom.css" rel="stylesheet">
+    <link href="../../static/css/animate.min.css" rel="stylesheet">
+    <link href="../../static/css/style.min862f.css?v=4.1.0" rel="stylesheet">
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-10">
+            <div class="ibox-content">
+                <div class="row">
+                    <h3>主机信息</h3>
+                    <hr>
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-10">
+                        <form role="form" class="form-horizontal" id="inputForm">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">IDC字母简称：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="name" name="name" value="{{ idc.name }}" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">idc名称：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="address" name="address" value="{{ idc.idc_name }}" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">IDC详细地址：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="address" name="address" value="{{ idc.address }}" required/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Ops：</label>
+                                <div class="col-sm-10">
+                                    <select class="form-control" id="peoples">
+                                        {% for p in peoples %}
+                                            {% if p.id == people.id %}
+                                                <option id="people_id" selected="SELECTED" value="{{ p.id }}">{{ p.name }}</option>
+                                            {% else %}
+                                                <option id="people_id" value="{{ p.id }}">{{ p.name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Ops Phone：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="ops_phone" name="ops_phone" value="{{ people.phone }}" disabled/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">IDC接口人：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="idc_interface" name="idc_interface" value="{{ idc.idc_interface }}" required/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">IDC Phone：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="idc_phone" name="idc_phone" value="{{ idc.idc_phone }}"  required/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">机柜数：</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="rel_cabinet_num" name="rel_cabinet_num" value="{{ idc.rel_cabinet_num }}" required/>
+                                </div>
+                            </div>
+                            <hr>
+                            <div id="content"></div>
+                            <div class="btn btn-primary" id="save">
+                                <i class="fa fa-search"></i>&nbsp;保存
+                            </div>
+                            <div class="btn btn-success" onclick="history.back(); return false;">
+                                <i class="fa fa-backward"></i>&nbsp;返回
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../../static/js/jquery.min.js?v=2.1.4"></script>
+<script src="../../static/js/jquery.validate.js"></script>
+<script src="../../static/js/bootstrap.min.js?v=3.3.6"></script>
+<script src="../../static/js/content.min.js?v=1.0.0"></script>
+<script src="../../static/js/plugins/iCheck/icheck.min.js"></script>
+<script src="../../static/js/base.js"></script>
+<script src="../../static/js/jquery.tmpl.js"></script>
+<script>
+    var id;
+    $(document).ready(function () {
+        $(".i-checks").iCheck({
+            checkboxClass: "icheckbox_square-green",
+            radioClass: "iradio_square-green"
+        });
+        dataText();
+    });
+
+    $('#save').click(function () {
+        console.log('ID: ' + $("#peoples option:selected").val());
+        var data = {
+            name: $("#name").val(),
+            idc_name: $("#idc_name").val(),
+            address: $("#address").val(),
+            people_id: $("#peoples option:selected").val(),
+            idc_interface: $("#idc_interface").val(),
+            idc_phone: $("#idc_phone").val(),
+            rel_cabinet_num: $("#rel_cabinet_num").val()
+        };
+        console.log(data);
+
+        $.ajax({
+            type: 'POST',
+            url: '/idc/update/{{ idc.id }}',
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: "application/json",
+            success: function (data) {
+                if (data.code == 1){
+                    console.log('修改IDC成功');
+                    location.href = '/idc'
+                }else {
+                    console.log("修改IDC失败", "该条IDC信息修改出现错误", data);
+                }
+            }
+        })
+
+    })
+
+</script>
+</body>
+</html>

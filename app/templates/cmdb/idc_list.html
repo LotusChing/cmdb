@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMDB</title>
+    <link rel="shortcut icon" href="../../static/favicon.ico">
+    <link href="../../static/css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+    <link href="../../static/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <link rel="stylesheet" href="../../static/css/plugins/bootstrap-table/bootstrap-table.css">
+    <link href="../../static/css/animate.min.css" rel="stylesheet">
+    <link href="../../static/css/style.min862f.css?v=4.1.0" rel="stylesheet">
+
+
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+
+                <div class="ibox-content">
+                    <div id="editable_wrapper" class="dataTables_wrapper form-inline" role="grid">
+                        <!-- 表格顶栏按钮开始-->
+                        <div id="toolbar">
+                            <div class="btn btn-primary" id="addButton" >添加</div>
+                            <div class="btn btn-danger" id="deleteButton" >删除</div>
+                            <select class="form-control">
+                                <option value="all">导出所有记录</option>
+                                <option value="selected">导出选中记录</option>
+                            </select>
+                        </div>
+                        <!-- 表格顶栏按钮结束-->
+                        <table id="table"
+                               data-toolbar="#toolbar"
+                               data-show-refresh="true"
+                               data-show-export="true"
+                               data-show-toggle="true"
+                               data-show-columns="true"
+                               data-show-footer="false"
+                               data-unique-id="id"
+                               data-click-to-select="true">
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../../static/js/jquery.min.js"></script>
+<script src="../../static/js/bootstrap.min.js"></script>
+<script src="../../static/js/content.min.js?v=1.0.0"></script>
+<script src="../../static/js/plugins/bootstrap-table/bootstrap-table.js"></script>
+<script src="../../static/js/plugins/bootstrap-table/bootstrap-table-export.js"></script>
+<script src="../../static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="http://rawgit.com/hhurz/tableExport.jquery.plugin/master/tableExport.js"></script>
+<script src="../../static/js/base.js"></script>
+<script src="../../static/js/plugins/layer/layer.min.js"></script>
+<script src="../../static/js/demo/layer-demo.min.js"></script>
+
+<!-- Sweet alert -->
+<link href="../../static/css/plugins/sweetalert/sweetalert.css" rel="stylesheet">
+<script src="../../static/js/plugins/sweetalert/sweetalert.min.js"></script>
+
+
+
+<script>
+    $.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['zh-CN']);
+    $(window).load(function () {
+        var $table = $('#table');
+        function initTable(export_type) {
+            $table.bootstrapTable({
+                classes : "table table-bordered table-hover table-striped",
+                pagination: true,
+                sidePagination: "server",
+                method: 'post',
+                pageNumber:1,
+                pageSize: 10,
+                pageList: [10, 25, 50, 100],
+                url: '/idc',
+                queryParamsType: '',
+                exportDataType: export_type,
+                onLoadSuccess: function(data) {
+                    console.log('Data', data);
+                },
+                columns: [{ // 列设置
+                    field: 'state',
+                    checkbox: true // 使用复选框
+                }, {
+                    field: 'name',
+                    title: 'IDC 简称',
+                    align: 'center',
+                    valign: 'middle',
+                    sortable: true
+                }, {
+                    field: 'idc_name',
+                    title: 'IDC 名称',
+                    align: 'center',
+                    valign: 'top',
+                    sortable: true
+                }, {
+                    field: 'address',
+                    title: 'IDC 地址',
+                    align: 'center',
+                    valign: 'top',
+                    sortable: true
+                }, {
+                    field: 'idc_people_name',
+                    title: '运维接口人',
+                    align: 'center',
+                    valign: 'top',
+                    sortable: true
+                },{
+                    field: 'idc_people_phone',
+                    title: 'Ops 电话',
+                    align: 'center',
+                    valign: 'top',
+                    sortable: true
+                },{
+                    field: 'idc_interface',
+                    title: 'IDC接口人',
+                    align: 'center',
+                    valign: 'top',
+                    sortable: true
+                },{
+                    field: 'idc_phone',
+                    title: 'IDC 电话',
+                    align: 'center',
+                    valign: 'top',
+                    sortable: true
+                },{
+                    field: 'operate',
+                    title: '操作',
+                    align: 'center',
+                    valign: 'middle',
+                    clickToSelect: false,
+                    formatter: operateFormatter
+                }]
+            });
+        }
+        initTable('all');
+
+        $('#toolbar').find('select').change(function () {
+            $table.bootstrapTable('destroy');
+            initTable($(this).val());
+        });
+
+        $('#addButton').click(function () {
+            location.href = '/people/add'
+        });
+
+        function operateFormatter(value, row, index) {
+            return [
+                '<a id="edit" href="/people/update/'+row.id+'"  title="edit">',
+                '<i class="glyphicon glyphicon-edit"></i>',
+                '</a>  '
+            ].join('');
+        }
+        window.operateEvents = {
+            'click .like': function (e, value, row, index) {
+                alert('You click like action, row: ' + JSON.stringify(row));
+            },
+            'click .remove': function (e, value, row, index) {
+                $table.bootstrapTable('remove', {
+                    field: 'id',
+                    values: [row.id]
+                });
+            }
+        };
+
+        $('#deleteButton').click(function () {
+            var ids = $.map($table.bootstrapTable('getSelections'), function (row) {
+                return row.id;
+            });
+            swal({
+                title: "确定要删除这条记录吗",
+                text: "删除后将无法恢复，请谨慎操作！",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "删除",
+                cancelButtonText: "取消",
+                closeOnConfirm: false
+            }, function () {
+                $.ajax({
+                    type: 'POST',
+                    url: '/people/delete',
+                    data: JSON.stringify({id: ids}),
+                    dataType: 'json',
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.code == 1){
+                            swal({
+                                title: "删除成功",
+                                text: "该条用户信息已成功删除",
+                                type: "success"
+                            });
+                            $table.bootstrapTable('remove', {
+                                field: 'id',
+                                values: ids
+                            });
+                        }else {
+                            swal({
+                                title: "删除失败",
+                                text: "该条用户信息删除中出向错误",
+                                type: "warning"
+                            });
+                            console.log("删除失败", "该条IDC信息删除出现错误", data);
+                        }
+                    }
+                })
+            });
+        });
+    });
+
+
+    function runningFormatter(value, row, index) {
+        return index;
+    }
+
+
+</script>
+</body>
+</html>

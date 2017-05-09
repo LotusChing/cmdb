@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title>服务器详情</title>
+
+    <link rel="shortcut icon" href="../../static/favicon.ico"> <link href="../../static/css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../static/css/font-awesome.css?v=4.4.0" rel="stylesheet">
+    <link href="../../static/css/plugins/jsTree/style.min.css" rel="stylesheet">
+    <link href="../../static/css/animate.css" rel="stylesheet">
+    <link href="../../static/css/style.css?v=4.1.0" rel="stylesheet">
+
+    <style>
+        li{word-wrap: break-word;}
+        .key{font-weight: bold; font-family: "Comic Sans MS"}
+        .value{font-weight: normal; color: grey; font-family: "Comic Sans MS"}
+    </style>
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h3>基础信息</h3>
+                </div>
+                <div class="ibox-content">
+                    <p class="key">主机名：<span class="value">{{ server_data.hostname }}</span></p>
+                    <p class="key">操作系统：<span class="value">{{ server_data.os }}</span></p>
+                    {% if server_data.is_vm == 1 %}
+                        <p class="key">虚拟机：<span class="value">是</span></p>
+                    {% else %}
+                        <p class="key">虚拟机：<span class="value">否</span></p>
+                    {% endif %}
+                    <p class="key">CPU核数：<span class="value">{{ server_data.cpu_count }}</span></p>
+                    <p class="key">内存大小：<span class="value">{{ server_data.memory_size }} MB</span></p>
+                    <p class="key">磁盘信息：
+                        <ul>
+                            {% for disk in server_data.disk_info %}
+                                <li><span class="value">{{  disk.device }}：</span><span class="value">{{ disk.size }}G</span></li>
+                            {% endfor %}
+                        </ul>
+                    </p>
+                    <p class="key">网卡信息：
+                        <ul>
+                            {% for nic in server_data.nic_info %}
+                                <li><span class="value">{{  nic.device }}</span></li>
+                                <ul>
+                                    <li><span class="value">IP：</span><span class="value">{{ nic.address }}</span></li>
+                                    <li><span class="value">Netmask：</span><span class="value">{{ nic.netmask }}</span></li>
+                                    <li><span class="value">Mac：</span><span class="value">{{ nic.mac }}</span></li>
+                                </ul>
+                            {% endfor %}
+                        </ul>
+                    </p>
+                </div>
+            </div>
+
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h3>硬件信息</h3>
+                    <div class="ibox-content">
+                        <p class="key">厂商：<span class="value">{{ server_data.manufacturer }}</span></p>
+                        <p class="key">型号：<span class="value">{{ server_data.server_model }}</span></p>
+                        <p class="key">出厂时间：<span class="value">{{ server_data.manufacture_date }}</span></p>
+                        <p class="key">CPU型号：<span class="value">{{ server_data.cpu_model }}</span></p>
+                        <p class="key">SN：<span class="value">{{ server_data.sn }}</span></p>
+                        <p class="key">内存槽总数：<span class="value">{{ server_data.memory_slots_count }}</span></p>
+                        <p class="key">内存槽使用数：<span class="value">{{ server_data.memory_slots_count }}</span></p>
+                        <p class="key">各内存条大小：
+                            {% for memory_slot in server_data.memory_slot_info %}
+                                <span class="value">{{  memory_slot }}</span>
+                            {% endfor %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+
+<!-- 全局js -->
+<script src="../../static/js/jquery.min.js?v=2.1.4"></script>
+<script src="../../static/js/bootstrap.min.js?v=3.3.6"></script>
+
+
+</body>
+
+</html>

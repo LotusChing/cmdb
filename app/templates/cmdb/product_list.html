@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMDB</title>
+    <title>Product</title>
     <link rel="shortcut icon" href="../../static/favicon.ico">
     <link href="../../static/css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
     <link href="../../static/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
@@ -67,7 +67,6 @@
 <script>
     $.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['zh-CN']);
     $(window).load(function () {
-        // var data = {{data|safe}};
         var $table = $('#table');
         function initTable(export_type) {
             $table.bootstrapTable({
@@ -78,7 +77,7 @@
                 pageNumber:1,
                 pageSize: 10,
                 pageList: [10, 25, 50, 100],
-                url: '/people',
+                url: '/product',
                 queryParamsType: '',
                 exportDataType: export_type,
                 onLoadSuccess: function(data) {
@@ -89,25 +88,25 @@
                     checkbox: true // 使用复选框
                 }, {
                     field: 'name',
-                    title: '姓名',
+                    title: '产品/项目',
                     align: 'center',
                     valign: 'middle',
                     sortable: true
                 }, {
-                    field: 'phone',
-                    title: '手机号',
+                    field: 'cn_name',
+                    title: '产品/项目名称',
                     align: 'center',
                     valign: 'top',
                     sortable: true
-                }, {
-                    field: 'email',
-                    title: '邮箱',
+                },  {
+                    field: 'ops_people_name',
+                    title: '运维接口人',
                     align: 'center',
                     valign: 'top',
                     sortable: true
-                }, {
-                    field: 'role_name',
-                    title: '角色',
+                },{
+                    field: 'dev_people_name',
+                    title: '开发接口人',
                     align: 'center',
                     valign: 'top',
                     sortable: true
@@ -129,77 +128,77 @@
         }
         initTable('all');
 
-    $('#toolbar').find('select').change(function () {
-        $table.bootstrapTable('destroy');
-        initTable($(this).val());
-    });
+        $('#toolbar').find('select').change(function () {
+            $table.bootstrapTable('destroy');
+            initTable($(this).val());
+        });
 
-    $('#addButton').click(function () {
-        location.href = '/people/add'
-    });
+        $('#addButton').click(function () {
+            location.href = '/product/add'
+        });
 
-    function operateFormatter(value, row, index) {
-        return [
-            '<a id="edit" href="/people/update/'+row.id+'"  title="edit">',
-            '<i class="glyphicon glyphicon-edit"></i>',
-            '</a>  '
-        ].join('');
-    }
-    window.operateEvents = {
-        'click .like': function (e, value, row, index) {
-            alert('You click like action, row: ' + JSON.stringify(row));
-        },
-        'click .remove': function (e, value, row, index) {
-            $table.bootstrapTable('remove', {
-                field: 'id',
-                values: [row.id]
-            });
+        function operateFormatter(value, row, index) {
+            return [
+                '<a id="edit" href="/product/update/'+row.id+'"  title="edit">',
+                '<i class="glyphicon glyphicon-edit"></i>',
+                '</a>  '
+            ].join('');
         }
-    };
+        window.operateEvents = {
+            'click .like': function (e, value, row, index) {
+                alert('You click like action, row: ' + JSON.stringify(row));
+            },
+            'click .remove': function (e, value, row, index) {
+                $table.bootstrapTable('remove', {
+                    field: 'id',
+                    values: [row.id]
+                });
+            }
+        };
 
-    $('#deleteButton').click(function () {
-        var ids = $.map($table.bootstrapTable('getSelections'), function (row) {
-            return row.id;
-        });
-        swal({
-            title: "确定要删除这条记录吗",
-            text: "删除后将无法恢复，请谨慎操作！",
-            type: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#DD6B55",
-            confirmButtonText: "删除",
-            cancelButtonText: "取消",
-            closeOnConfirm: false
-        }, function () {
-            $.ajax({
-                type: 'POST',
-                url: '/people/delete',
-                data: JSON.stringify({id: ids}),
-                dataType: 'json',
-                contentType: "application/json",
-                success: function (data) {
-                    if (data.code == 1){
-                        swal({
-                            title: "删除成功",
-                            text: "该条用户信息已成功删除",
-                            type: "success"
-                        });
-                        $table.bootstrapTable('remove', {
-                            field: 'id',
-                            values: ids
-                        });
-                    }else {
-                        swal({
-                            title: "删除失败",
-                            text: data.errMsg,
-                            type: "warning"
-                        });
-                        console.log("删除失败", "该条IDC信息删除出现错误", data);
+        $('#deleteButton').click(function () {
+            var ids = $.map($table.bootstrapTable('getSelections'), function (row) {
+                return row.id;
+            });
+            swal({
+                title: "确定要删除这条记录吗",
+                text: "删除后将无法恢复，请谨慎操作！",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "删除",
+                cancelButtonText: "取消",
+                closeOnConfirm: false
+            }, function () {
+                $.ajax({
+                    type: 'POST',
+                    url: '/product/delete',
+                    data: JSON.stringify({id: ids}),
+                    dataType: 'json',
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.code == 1){
+                            swal({
+                                title: "删除成功",
+                                text: "该条用户信息已成功删除",
+                                type: "success"
+                            });
+                            $table.bootstrapTable('remove', {
+                                field: 'id',
+                                values: ids
+                            });
+                        }else {
+                            swal({
+                                title: "删除失败",
+                                text: "该条用户信息删除中出向错误",
+                                type: "warning"
+                            });
+                            console.log("删除失败", "该条IDC信息删除出现错误", data);
+                        }
                     }
-                }
-            })
+                })
+            });
         });
-    });
     });
 
 

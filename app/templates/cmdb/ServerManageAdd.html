@@ -75,7 +75,7 @@
 
     $('#commit').click(function () {
         var server_data = JSON.parse(server_data_area.getValue());
-        console.log(server_data)
+        console.log(server_data);
         $.ajax({
             type: 'POST',
             url: '/server/add',

@@ -1,6 +1,8 @@
 from app.base import current_app
 from app.models import db
 import app.models as models
+from ast import literal_eval
+import datetime
 
 
 class DBBaseClass(object):
@@ -27,7 +29,7 @@ class DBBaseClass(object):
             db.session.commit()
         except Exception as e:
             current_app.logger.warning('提交到{}出错, 错误原因：{}'.format(self.obj.__name__, e))
-            raise Exception('{}: commit error'.format(self.obj.__name__))
+            raise Exception('{}: insert commit error-{}'.format(self.obj.__name__, e))
         return tb_data.id
 
     def get(self, params={}):
@@ -79,18 +81,31 @@ class DBBaseClass(object):
         current_app.logger.debug('处理返回数据.')
         res = []
         for obj in data:
-            current_app.logger.debug('Obj: {}  dir: {}'.format(obj, dir(obj)))
+            # current_app.logger.debug('Obj: {}  dir: {}'.format(obj, dir(obj)))
             if output:
                 tmp = {}
                 for output_field in output:
                     if '.' in output_field:
                         ref_tb_name,  ref_tb_field = output_field.split('.')
-                        current_app.logger.debug('table: {} field: {}'.format(ref_tb_name, ref_tb_field))
+                        # current_app.logger.debug('table: {} field: {}'.format(ref_tb_name, ref_tb_field))
                         ref_tb_obj = getattr(obj, ref_tb_name)
-                        current_app.logger.debug('tb obj: {} type: {}'.format(dir(ref_tb_obj), type(ref_tb_obj)))
-                        tmp[output_field.replace('.', '_')] = getattr(ref_tb_obj, ref_tb_field)
+                        # current_app.logger.debug('tb obj: {} type: {} value: {}'.format(dir(ref_tb_obj), type(ref_tb_obj), ref_tb_obj))
+                        # 日期格式datetime.date转字符串格式str，不然Json会报错
+                        if isinstance(getattr(ref_tb_obj, ref_tb_field), datetime.date):
+                            tmp[output_field.replace('.', '_')] = str(getattr(ref_tb_obj, ref_tb_field))
+                        else:
+                            tmp[output_field.replace('.', '_')] = getattr(ref_tb_obj, ref_tb_field)
                     else:
-                        tmp[output_field] = getattr(obj, output_field)
+                        # 日期格式datetime.date转字符串格式str，不然Json会报错
+                        tmp_field_value = getattr(obj, output_field)
+                        if isinstance(tmp_field_value, datetime.date):
+                            tmp[output_field] = str(tmp_field_value)
+                        # 字符串格式list转为列表格式  "[1,2,3] -> [1,2,3], 用isinstance + literal_eval去判断时，总是报错，无奈就用笨办法"
+                        elif '[' in str(tmp_field_value):
+                            tmp[output_field] = literal_eval(tmp_field_value)
+                        else:
+                            tmp[output_field] = tmp_field_value
+
                 res.append(tmp)
             else:
                 tmp = obj.__dict__

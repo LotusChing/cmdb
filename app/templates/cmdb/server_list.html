@@ -87,48 +87,54 @@
                     field: 'state',
                     checkbox: true // 使用复选框
                 }, {
-                    field: 'name',
-                    title: 'IDC 简称',
+                    field: 'idc_name',
+                    title: '机房',
                     align: 'center',
                     valign: 'middle',
                     sortable: true
                 }, {
-                    field: 'idc_name',
-                    title: 'IDC 名称',
+                    field: 'product_name',
+                    title: '产品线',
                     align: 'center',
                     valign: 'top',
                     sortable: true
                 }, {
-                    field: 'address',
-                    title: 'IDC 地址',
+                    field: 'hostname',
+                    title: '主机名',
+                    align: 'center',
+                    valign: 'top',
+                    sortable: true
+                },{
+                    field: 'os',
+                    title: 'OS',
                     align: 'center',
                     valign: 'top',
                     sortable: true
                 }, {
-                    field: 'server_people_name',
+                    field: 'manufacturer',
+                    title: '制造商',
+                    align: 'center',
+                    valign: 'top',
+                    sortable: true
+                }, {
+                    field: 'server_model',
+                    title: '型号',
+                    align: 'center',
+                    valign: 'top',
+                    sortable: true
+                }, {
+                    field: 'people_name',
                     title: '运维接口人',
                     align: 'center',
                     valign: 'top',
                     sortable: true
-                },{
-                    field: 'server_people_phone.',
-                    title: 'Ops 电话',
+                }, {
+                    field: 'status',
+                    title: '状态',
                     align: 'center',
                     valign: 'top',
                     sortable: true
-                },{
-                    field: 'idc_interface',
-                    title: 'IDC接口人',
-                    align: 'center',
-                    valign: 'top',
-                    sortable: true
-                },{
-                    field: 'idc_phone',
-                    title: 'IDC 电话',
-                    align: 'center',
-                    valign: 'top',
-                    sortable: true
-                },{
+                }, {
                     field: 'operate',
                     title: '操作',
                     align: 'center',
@@ -138,6 +144,7 @@
                 }]
             });
         }
+        // 默认导出参数为所有
         initTable('all');
 
         $('#toolbar').find('select').change(function () {
@@ -146,14 +153,18 @@
         });
 
         $('#addButton').click(function () {
-            location.href = '/idc/add'
+            location.href = '/server/add'
         });
 
         function operateFormatter(value, row, index) {
+            console.log('formatter...', row, value, index)
             return [
-                '<a id="edit" href="/idc/update/'+row.id+'"  title="edit">',
-                '<i class="glyphicon glyphicon-edit"></i>',
-                '</a>  '
+                '<a id="edit" href="/server/update/'+row.id+'"  title="edit">',
+                '<i class="glyphicon glyphicon-edit"> </i>',
+                '</a>  ',
+                '<a class="detail" href="/server/detail/'+row.id+'" title="detail">',
+                '<i class="fa fa-asterisk"> </i>',
+                '</a>'
             ].join('');
         }
         window.operateEvents = {
@@ -184,7 +195,7 @@
             }, function () {
                 $.ajax({
                     type: 'POST',
-                    url: '/idc/delete',
+                    url: '/server/delete',
                     data: JSON.stringify({id: ids}),
                     dataType: 'json',
                     contentType: "application/json",

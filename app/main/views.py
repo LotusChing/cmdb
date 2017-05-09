@@ -2,15 +2,21 @@ from __future__ import unicode_literals
 import json
 import time
 import hashlib
-from flask import request, session, redirect, url_for, current_app, render_template,Response
+from datetime import timedelta
+from flask import request, session, redirect, app, current_app, render_template, Response
 from . import main
 from app.modules.base_class import DBBaseClass
+
+def is_login():
+    if not request.cookies.get('tag', None) in session.values():
+        print('Not found session, Redirect to login....', session)
+        return False
+    return True
 
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
-    if not request.cookies.get('tag', None) in session.values():
-        print('Not found session, Redirect to login....', session)
+    if not is_login():
         return redirect('/login')
     else:
         user_id = request.cookies.get('tag')
@@ -23,8 +29,11 @@ def index():
 
 @main.route('/login', methods=['GET'])
 def login():
-    print('Render Login Page....')
-    return render_template('login.html',)
+    if not is_login():
+        print('Render Login Page....')
+        return render_template('login.html')
+    else:
+        return redirect('/')
 
 
 @main.route('/user_login', methods=['POST'])
@@ -36,6 +45,8 @@ def user_login():
     people_tb = DBBaseClass('people')
     user_data = people_tb.get({'where': {'name': user, 'password': passwd}})
     if len(user_data) >= 1:
+        session.permanent = True
+        app.permanent_session_lifetime = timedelta(days=1)
         session[data['username']] = str(user_data[0]['id'])
         res = Response(json.dumps({'code': 1}))
         res.set_cookie(key='tag', value=str(user_data[0]['id']), expires=time.time()+6*60)
@@ -59,6 +70,38 @@ def logout():
 '''
 
 
+def product_tree():
+    test_tb = DBBaseClass('product')
+    top_level_products = test_tb.get({'output': ['id', 'name', 'cn_name', 'icon'], 'where': {'pid': 0, 'status': 1}})
+    data = {
+        'core': {
+            'data': []
+        }
+    }
+    for top_product in top_level_products:
+        top_tmp_data = {
+            'text': '{}({})'.format(top_product['cn_name'], top_product['name']),
+            'icon': top_product['icon'],
+            'state': {
+                'opened': 'true'
+            }
+        }
+        # 查找当前产品/项目是否有子项目
+        second_level_products = test_tb.get({'output': ['id', 'name', 'cn_name', 'icon'], 'where': {'pid': top_product['id'], 'status': 1}})
+        if len(second_level_products) >= 1:
+            top_tmp_data['children'] = []
+            for second_product in second_level_products:
+                second_tmp_data = {
+                    'text': '{}({})'.format(second_product['cn_name'], second_product['name']),
+                    'icon': second_product['icon'],
+                }
+                top_tmp_data['children'].append(second_tmp_data)
+
+        data['core']['data'].append(top_tmp_data)
+    return json.dumps(data)
+
+
 @main.route('/home', methods=['GET', 'POST'])
 def home():
-    return render_template('home.html')
+    return render_template('home.html',
+                           products_tree=product_tree())

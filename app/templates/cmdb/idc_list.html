@@ -105,13 +105,13 @@
                     valign: 'top',
                     sortable: true
                 }, {
-                    field: 'idc_people_name',
+                    field: 'people_name',
                     title: '运维接口人',
                     align: 'center',
                     valign: 'top',
                     sortable: true
                 },{
-                    field: 'idc_people_phone',
+                    field: 'people_phone',
                     title: 'Ops 电话',
                     align: 'center',
                     valign: 'top',
@@ -146,12 +146,12 @@
         });
 
         $('#addButton').click(function () {
-            location.href = '/people/add'
+            location.href = '/idc/add'
         });
 
         function operateFormatter(value, row, index) {
             return [
-                '<a id="edit" href="/people/update/'+row.id+'"  title="edit">',
+                '<a id="edit" href="/idc/update/'+row.id+'"  title="edit">',
                 '<i class="glyphicon glyphicon-edit"></i>',
                 '</a>  '
             ].join('');
@@ -184,7 +184,7 @@
             }, function () {
                 $.ajax({
                     type: 'POST',
-                    url: '/people/delete',
+                    url: '/idc/delete',
                     data: JSON.stringify({id: ids}),
                     dataType: 'json',
                     contentType: "application/json",

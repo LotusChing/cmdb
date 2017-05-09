@@ -47,11 +47,11 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="col-sm-2 control-label">Ops：</label>
+                                <label class="col-sm-2 control-label">运维接口人：</label>
                                 <div class="col-sm-10">
                                     <select class="selectpicker form-control" id="idcs">
                                         {% for people in peoples %}
-                                            <option id="people_id" value="{{ people.id }}">{{ people.name }}</option>
+                                            <option id="ops_interface" value="{{ people.id }}">{{ people.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -103,6 +103,12 @@
 <script src="../../static/js/plugins/iCheck/icheck.min.js"></script>
 <script src="../../static/js/base.js"></script>
 <script src="../../static/js/jquery.tmpl.js"></script>
+
+<!-- Sweet alert -->
+<link href="../../static/css/plugins/sweetalert/sweetalert.css" rel="stylesheet">
+<script src="../../static/js/plugins/sweetalert/sweetalert.min.js"></script>
+
+
 <script>
     var optionData;
     $(document).ready(function () {
@@ -119,7 +125,7 @@
             name: $('#name').val(),
             idc_name: $('#idc_name').val(),
             address: $('#address').val(),
-            people_id: $('#people_id').val(),
+            ops_interface: $('#ops_interface').val(),
             idc_interface: $('#idc_interface').val(),
             idc_phone: $('#idc_phone').val(),
             rel_cabinet_num: $('#rel_cabinet_num').val()
@@ -134,10 +140,21 @@
             contentType: "application/json",
             success: function (data) {
                 if (data.code == 1){
-                    console.log('添加IDC成功');
-                    location.href = '/idc'
+                    swal({
+                        title: '成功',
+                        text: 'IDC信息添加成功',
+                        type: 'success'
+                    }, function () {
+                        location.href = '/idc'
+                    });
                 }else {
-                    console.log("添加IDC失败", "该条IDC信息删除出现错误", data);
+                    swal({
+                        title: '失败',
+                        text: data.errMsg,
+                        type: 'warning'
+                    }, function () {
+                        location.href = '/idc'
+                    });
                 }
             }
         })

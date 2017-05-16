@@ -49,7 +49,7 @@ def user_login():
         app.permanent_session_lifetime = timedelta(days=1)
         session[data['username']] = str(user_data[0]['id'])
         res = Response(json.dumps({'code': 1}))
-        res.set_cookie(key='tag', value=str(user_data[0]['id']), expires=time.time()+6*60)
+        res.set_cookie(key='tag', value=str(user_data[0]['id']), expires=time.time()+60*60)
         return res
     else:
         return json.dumps({'code': 0})
@@ -58,7 +58,6 @@ def user_login():
 @main.route('/logout')
 def logout():
     print(session)
-    del session['user']
     print('Logout CMDB, Render index Page....')
     res = Response(render_template('login.html'))
     res.set_cookie('tag', '', expires=0)
@@ -80,19 +79,19 @@ def product_tree():
     }
     for top_product in top_level_products:
         top_tmp_data = {
-            'text': '{}({})'.format(top_product['cn_name'], top_product['name']),
+            'text': top_product['cn_name'],
             'icon': top_product['icon'],
             'state': {
                 'opened': 'true'
             }
         }
         # 查找当前产品/项目是否有子项目
-        second_level_products = test_tb.get({'output': ['id', 'name', 'cn_name', 'icon'], 'where': {'pid': top_product['id'], 'status': 1}})
+        second_level_products = test_tb.get({'output': ['id', 'cn_name', 'icon'], 'where': {'pid': top_product['id'], 'status': 1}})
         if len(second_level_products) >= 1:
             top_tmp_data['children'] = []
             for second_product in second_level_products:
                 second_tmp_data = {
-                    'text': '{}({})'.format(second_product['cn_name'], second_product['name']),
+                    'text': second_product['cn_name'],
                     'icon': second_product['icon'],
                 }
                 top_tmp_data['children'].append(second_tmp_data)

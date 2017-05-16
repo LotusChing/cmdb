@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 
-    <title>H+ 后台主题UI框架 - 树形视图</title>
+    <title>时间轴</title>
 
     <meta name="keywords" content="H+后台主题,后台bootstrap框架,会员中心主题,后台HTML,响应式后台">
     <meta name="description" content="H+是一个完全响应式，基于Bootstrap3最新版本开发的扁平化主题，她采用了主流的左右两栏式布局，使用了Html5+CSS3等现代技术">
@@ -18,25 +18,94 @@
     <link href="../static/css/plugins/jsTree/style.min.css" rel="stylesheet">
     <link href="../static/css/animate.css" rel="stylesheet">
     <link href="../static/css/style.css?v=4.1.0" rel="stylesheet">
-
 </head>
 
-<body class="gray-bg">
+
+
+<body class="white-bg">
 <div class="wrapper wrapper-content  animated fadeInRight">
     <div class="row">
-        <div class="col-sm-6">
+        <!--左侧产品树开始!-->
+        <div class="col-sm-3">
             <div class="ibox float-e-margins">
-                <div class="ibox-title">
-                    <h5>产品线</h5>
-                </div>
-                <div class="ibox-content">
+                <div class="btn btn-primary" id="product_tree_btn">产品线</div>
+                <div class="ibox-content" id="product_tree_ctx">
                     <div id="using_json"></div>
                 </div>
             </div>
         </div>
+        <!--左侧产品树结束!-->
+
+        <!--中间信息框开始!-->
+        <div class="col-sm-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title item_font">
+                    主机总数
+                    <span class="badge badge-success item_btn">Hosts</span>
+                </div>
+                <div class="ibox-content">
+                    <p class="text-center number">666</p>
+                </div>
+            </div>
+            <div class="ibox float-e-margins">
+                <div class="ibox-title item_font">
+                    产品线/产品/服务
+                    <span class="badge badge-info item_btn">Product</span>
+                </div>
+                <div class="ibox-content">
+                    <p class="text-center number">666/66/6</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title item_font">
+                    故障总数
+                    <span class="badge badge-danger  item_btn">Problem</span>
+                </div>
+                <div class="ibox-content">
+                    <p class="text-center number">666</p>
+                </div>
+            </div>
+            <div class="ibox float-e-margins">
+                <div class="ibox-title item_font">
+                    人员
+                    <span class="badge badge-primary  item_btn">People</span>
+                </div>
+                <div class="ibox-content">
+                    <p class="text-center number">67</p>
+                </div>
+            </div>
+        </div>
+        <!--中间信息框结束!-->
+
+        <!--右侧历史部署日志开始!-->
+        <div class="col-sm-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>发布日志</h5>
+                </div>
+
+                <div class="ibox-content timeline">
+                    <div class="timeline-item">
+                        <div class="row">
+                            <div class="col-xs-4">
+                                <p class="text-navy f_left relative_time text-center">2 小时前</p>
+                            </div>
+                            <div class="col-xs-8 content no-top-border">
+                                <div class="badge badge-warning deploy_job_name">UAirServer-develop</div>
+                                <p class="deploy_ctx">提交人：敛青</p>
+                                <p class="deploy_ctx">todo server detail, home page</p>
+                                <div class="btn btn-info btn-rounded btn-xs" id="commit_id_btn">commit id</div>
+                                <div class="btn btn-info btn-rounded btn-xs" id="build_log_btn" name="UAirServer-develop" value="80">build log</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--右侧历史部署日志结束!-->
     </div>
-
-
 </div>
 
 
@@ -45,91 +114,126 @@
 <script src="../static/js/bootstrap.min.js?v=3.3.6"></script>
 
 
+<!-- layer javascript -->
+<script src="../static/js/plugins/layer/layer.min.js"></script>
+
 <!-- jsTree plugin javascript -->
 <script src="../static/js/plugins/jsTree/jstree.min.js"></script>
 
 <style>
-
-    .jstree-open > .jstree-anchor > .fa-folder:before {
-        content: "\f07c";
+    .jstree-default a {
+        white-space:normal !important; height: auto;
     }
-
-    .jstree-default .jstree-icon.none {
-        width: 0;
+    .jstree-anchor {
+        height: auto !important;
+    }
+    .jstree-default li > ins {
+        vertical-align:top;
+    }
+    .jstree-leaf {
+        height: auto;
+    }
+    .jstree-leaf a{
+        height: auto !important;
+    }
+    #product_tree_btn{
+        width: 100%;
+    }
+    #product_tree_ctx{
+        border: none;
+    }
+    .number{
+        color: #00C1B3;
+        font-size: 32px;
+        font-family: "Comic Sans MS";
+    }
+    .item_font{
+        font-size: 14px;
+    }
+    .item_btn{
+        float:right;
+        text-align:center;
+        font-weight: normal;
+    }
+    .f_left{
+        float: left;
+        text-align:left;
+    }
+    .relative_time{
+        margin-top: 50%;
+        font-size: 10px;
+    }
+    .deploy_ctx {
+        font-size: 10px;
+    }
+    p{
+        word-wrap: break-word;
+    }
+    .deploy_job_name{
+        font-size: 10px;
+        text-align:center;
+        color: white;
+        font-weight: normal;
+        font-family: "Comic Sans MS";
     }
 </style>
 
 <script>
-    var bak = {
-        'core': {
-            'data': [
-                {
-                    'text': '机场信息化',
-                    'icon': 'fa fa-plane'
-                },
-                {
-                    'text': '商业服务',
-                    'icon': 'fa fa-jpy',
-                    'state': {
-                        'opened': true
-                    },
-                    'children': [
-                        {
-                            'text': '悠航(UAir)',
-                            'icon': 'fa fa-fighter-jet',
-                            'children': [
-                                {
-                                    'text': 'UAirServer',
-                                    'icon': 'none'
-                                },
-                                {
-                                    'text': 'UAirCms',
-                                    'icon': 'none'
-                                },
-                                {
-                                    'text': 'UAirWeb',
-                                    'icon': 'none'
-                                },
-                                {
-                                    'text': 'UAirCenter',
-                                    'icon': 'none'
-                                }
-                            ],
-                            'state': {
-                                'opened': true
-                            }
-                        },
-                        {
-                            'text': '当面付(Pos)',
-                            'icon': 'fa fa-money',
-                            'children': [
-                                {
-                                    'text': 'jct-portal',
-                                    'icon': 'none'
-                                },
-                                {
-                                    'text': 'micropay-gateway',
-                                    'icon': 'none'
-                                }, {
-                                    'text': 'billPay',
-                                    'icon': 'none'
-                                }
-                            ],
-                            'state': {
-                                'opened': true
-                            }
-                        }
-                    ]
-                }
-            ]
-        }
-    };
     $('#using_json').jstree($.parseJSON({{ products_tree|tojson }}));
+</script>
+<script>
+    $('#using_json').on("select_node.jstree", function (e, item_data) {
+        $.ajax({
+            type: 'POST',
+            url: '/jenkins/build_history',
+            data: JSON.stringify({'item':item_data.node.text }),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function (data) {
+                if (data.code == 1){
+                    console.log('OK', data);
+                }else {
+                    console.log('Err', data);
+                }
+            }
+        })
+    });
+
+    $('#commit_id_btn').click(function () {
+        layer.tips('<p>6c7105a9e2887a381b7b984d9be68f723312163e</p>', '#commit_id_btn', {
+            tips: [1, '#3595CC'],
+            time: 3000
+        });
+    });
+    if(screen.width>=900){
+        $('#build_log_btn').click(function (e, data) {
+            var job_num = $(this).attr('name');
+            var build_id = $(this).attr('value');
+                parent.layer.open({
+                    type: 2,
+                    title: '很多时候，我们想最大化看，比如像这个页面。',
+                    shadeClose: true,
+                    shade: false,
+                    maxmin: true, //开启最大化最小化按钮
+                    area: ['1150px', '650px'],
+                    content: 'http://120.24.80.34:2222/job/' + job_num + '/' + build_id + '/consoleText'
+                });
+        });
+    }else {
+        $('#build_log_btn').click(function (e, data) {
+            parent.layer.open({
+                type: 2,
+                title: 'layer mobile页',
+                shadeClose: true,
+                shade: 0.8,
+                area: ['380px', '90%'],
+                content: 'http://120.24.80.34:2222/job/UAirServer-develop/200/consoleText'
+            });
+        })
+    }
+
 
 </script>
-
-<script type="text/javascript" src="http://tajs.qq.com/stats?sId=9051096" charset="UTF-8"></script>
-<!--统计代码，可删除-->
 </body>
 
 </html>

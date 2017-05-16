@@ -20,6 +20,7 @@
         li{word-wrap: break-word;}
         .key{font-weight: bold; font-family: "Comic Sans MS"}
         .value{font-weight: normal; color: grey; font-family: "Comic Sans MS"}
+        #server_load img{width: 100%;max-width:1120px; height: 100%}
     </style>
 </head>
 
@@ -29,7 +30,7 @@
         <div class="col-sm-4">
             <div class="ibox float-e-margins">
                 <div class="ibox-title">
-                    <h3>基础信息</h3>
+                    <h3 class="text-center">基础信息</h3>
                 </div>
                 <div class="ibox-content">
                     <p class="key">主机名：<span class="value">{{ server_data.hostname }}</span></p>
@@ -65,7 +66,7 @@
 
             <div class="ibox float-e-margins">
                 <div class="ibox-title">
-                    <h3>硬件信息</h3>
+                    <h3 class="text-center">硬件信息</h3>
                     <div class="ibox-content">
                         <p class="key">厂商：<span class="value">{{ server_data.manufacturer }}</span></p>
                         <p class="key">型号：<span class="value">{{ server_data.server_model }}</span></p>
@@ -83,6 +84,73 @@
                 </div>
             </div>
         </div>
+
+    <div class="col-sm-8">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h3 class="text-center">其他信息</h3>
+            </div>
+            <div class="ibox-content">
+                <p class="key">IDC 机房：<span class="value">{{ server_data.idc_idc_name }}</span></p>
+                <p class="key">IDC 地址：<span class="value">{{ server_data.idc_address }}</span></p>
+                <p class="key">IDC 联系人：<span class="value">{{ server_data.idc_idc_interface }}</span></p>
+                <p class="key">IDC 电话：<span class="value">{{ server_data.idc_idc_phone }}</span></p>
+                <p class="key">运维接口人：<span class="value">{{ server_data.people_name }}</span></p>
+                <p class="key">所属产品线：<span class="value">{{ server_data.product_cn_name }}</span>(<span class="value">{{ server_data.product_name }}</span>)</p>
+            </div>
+        </div>
+    </div>
+        <div class="col-sm-8">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h3 class="text-center">服务器当前负载</h3>
+                </div>
+                <div class="ibox-content" id="server_load">
+                    <div class="load_effect">
+                        <div class="sk-spinner sk-spinner-three-bounce">
+                            <div class="sk-bounce1"></div>
+                            <div class="sk-bounce2"></div>
+                            <div class="sk-bounce3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-8">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h3 class="text-center">业务网卡网络IO</h3>
+                </div>
+                <div class="ibox-content" id="server_net_io">
+                    <div class="load_effect">
+                        <div class="sk-spinner sk-spinner-three-bounce">
+                            <div class="sk-bounce1"></div>
+                            <div class="sk-bounce2"></div>
+                            <div class="sk-bounce3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-8">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h3 class="text-center">磁盘IO情况</h3>
+                </div>
+                <div class="ibox-content" id="server_net_io">
+                    <div class="load_effect">
+                        <div class="sk-spinner sk-spinner-three-bounce">
+                            <div class="sk-bounce1"></div>
+                            <div class="sk-bounce2"></div>
+                            <div class="sk-bounce3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
 </div>
 
 
@@ -90,6 +158,32 @@
 <script src="../../static/js/jquery.min.js?v=2.1.4"></script>
 <script src="../../static/js/bootstrap.min.js?v=3.3.6"></script>
 
+<script>
+    $(window).load(function () {
+        get_server_load_graph();
+        setInterval(get_server_load_graph, 30000);
+    });
+
+    function get_server_load_graph() {
+        $.ajax({
+            type: 'GET',
+            url: '/zabbix/graph/{{ server_data.hostname }}/CPU load',
+            contentType: "application/json",
+            dataType: 'json',
+            success: function (data) {
+                if (data.code == 1){
+                    $('#server_load').empty();
+                    $('<img src="' + data.graph_url + '">').appendTo($('#server_load'));
+
+                    console.log('OK', data);
+                }else {
+                    console.log('Err', data);
+                }
+            }
+        })
+    }
+
+</script>
 
 </body>
 

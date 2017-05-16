@@ -1,10 +1,16 @@
 # coding: utf8
 from __future__ import unicode_literals
 from flask import request, render_template, current_app, redirect
+from jenkinsapi.jenkins import Jenkins
 from . import main
 import datetime
+import requests
+import pymysql
+import random
 import hashlib
 import json
+import time
+import os
 from app.modules.base_class import DBBaseClass
 
 '''
@@ -245,7 +251,7 @@ def server_list():
         else:
             host_tb = DBBaseClass('server')
             # servers_data = server_tb.get({'output': ['server_idc.name', 'server_product.name', 'hostname', 'os', 'manufacturers', 'server_model', 'server_people.name', ''status'], 'where': {'status': 1}, 'limit': [start_offset, page_size]})
-            hosts_data = host_tb.get({'output': ['id', 'idc.name', 'product.name', 'hostname', 'os', 'manufacturer', 'server_model', 'people.name', 'status'], 'where': {'status': 1}, 'limit': [0, 10]})
+            hosts_data = host_tb.get({'output': ['id', 'idc.idc_name', 'product.name', 'hostname', 'os', 'manufacturer', 'server_model', 'people.name', 'status'], 'where': {'status': 1}, 'limit': [0, 10]})
             total_data = host_tb.get({'output': ['id'], 'where': {'status': 1}, 'limit': [1, 999999999999]})
             data = {
                 'total': len(total_data),
@@ -275,8 +281,8 @@ def server_update(server_id):
 def server_detail(server_id):
     server_tb = DBBaseClass('server')
     server_data = server_tb.get({
-        'output': ['idc.name', 'hostname', 'os', 'cpu_count', 'memory_size', 'product.name',  # 基础信息字段
-                   'nic_info',   # 网络信息字段
+        'output': ['idc.idc_name', 'idc.address', 'idc.idc_interface', 'idc.idc_phone', 'hostname', 'os', 'cpu_count', 'memory_size', 'product.name',  # 基础信息字段
+                   'nic_info', 'product.cn_name', 'people.name', # 网络信息字段
                    'is_vm', 'sn', 'cpu_model', 'manufacturer', 'server_model', 'manufacture_date',  # 硬件信息字段
                    'memory_slots_count', 'memory_slot_use', 'memory_slot_info', 'disk_info'],
         'where': {'status': 1, 'id': server_id}
@@ -381,12 +387,119 @@ def product_delete():
         }
     return json.dumps(data)
 
+
+'''
+    Zabbix
+'''
+
+
+@main.route('/zabbix/graph/<string:hostname>/<string:graph_name>', methods=['GET'])
+def get_zabbix_graph(hostname, graph_name):
+    try:
+        zbx_api_url = 'http://zabbix.aiplatform.com.cn/zabbix/api_jsonrpc.php'
+        zbx_login_url = 'http://zabbix.aiplatform.com.cn/index.php'
+        logindata = {
+            'autologin': '1',
+            'name': 'LotusChing',
+            'password': 'LotusChing',
+            'enter': 'Sign in'
+        }
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0',
+            'Content-type': 'application/x-www-form-urlencoded'
+        }
+        zabbix_session = requests.session()
+        zabbix_session.post(zbx_login_url, params=logindata, headers=headers, verify=True)
+        params = {
+            "jsonrpc": "2.0",
+            "method": "user.login",
+            "params": {
+                "user": "LotusChing",
+                "password": "LotusChing"
+            },
+            "id": 1
+        }
+        resp = zabbix_session .post(zbx_api_url, json=params)
+        current_app.logger.debug(resp.cookies)
+        zbx_auth = json.loads(resp.content.decode())['result']
+        if zabbix_session.cookies['zbx_sessionid']:
+            current_app.logger.debug('zabbix login successful.')
+            resp = zabbix_session.post(zbx_api_url, json=params)
+            if json.loads(resp.content.decode())['id'] is 1:
+                current_app.logger.debug('Host get successful, Data: {}'.format(resp.content))
+                params = {
+                    "jsonrpc": "2.0",
+                    "method": "graph.get",
+                    "params": {
+                        "output": ['name', 'graphid'],
+                        "filter": {
+                            "host": [hostname]
+                        }
+                    },
+                    "auth": zbx_auth,
+                    "id": 1
+                }
+                resp = zabbix_session.post(zbx_api_url, json=params)
+                if json.loads(resp.content.decode())['id'] is 1:
+                    current_app.logger.debug('Get graph [id, name] successful, ready to get image data...')
+                    host_graphs = json.loads(resp.content.decode())['result']
+                    for graph in host_graphs:
+                        if graph['name'] == graph_name:
+                            cpu_load_graphid = graph['graphid']
+                            image_url = 'http://zabbix.aiplatform.com.cn/chart2.php?graphid={}&period=3600&stime={}&width=1120&height=120'.format(cpu_load_graphid, int(time.time()) - 3600)
+                            current_app.logger.debug('Image url: {}'.format(image_url))
+                            resp = zabbix_session.get(image_url, verify=True)
+                            img_dir = str(os.getcwd()) + '/app/static/img/'
+                            f = open('{}/{}-{}.png'.format(img_dir, hostname, graph_name), 'wb')
+                            [f.write(chunk) for chunk in resp.iter_content(chunk_size=512 * 1024) if chunk]
+                            f.close()
+                            current_app.logger.debug('zabbix graph image get successful.')
+                            return json.dumps({'code': 1, 'graph_url': '../../static/img/{}-{}.png?{}'.format(hostname, graph_name, random.randint(1, 999))})
+    except Exception as e:
+        current_app.logger.debug('Get zabbix graph with problem, msg: {}'.format(e))
+        return json.dumps({'code': 0, 'errMsg': str(e)})
+
 '''
     Test Route
 '''
 
 
-@main.route('/test', methods=['GET'])
+@main.route('/jenkins/build_history', methods=['GET'])
+def build_history():
+    item = request.json['item'].split('-')[1]
+    jenkins_url = 'http://120.24.80.34:2222'
+    server = Jenkins(jenkins_url, username='wecan', password='wecan405')
+    auth = ('wecan', 'wecan405')
+    jenkins_session = requests.session()
+    current_app.logger.debug('Logging into jenkins...')
+    resp = jenkins_session.post('http://120.24.80.34:2222/api/json', auth=auth)
+    current_app.logger.debug('Logging success, getting all jobs info...')
+    all_jobs_info = json.loads(resp.content.decode())
+    job_name_list = [job['name'] for job in all_jobs_info['jobs'] if item in job['name']]
+    data = []
+    for job in job_name_list:
+        current_app.logger.debug('[{}] getting job latest 10 ids...'.format(job))
+        job_instance = server.get_job(job)
+        res = job_instance.get_build_ids()
+        last_10_build_ids = list(res)[:6]
+        # 取出最近10条jenkins job build 信息
+        current_app.logger.debug('[{}] getting latest 10 job data...'.format(job))
+        for build_id in last_10_build_ids:
+            build_data = job_instance.get_build(build_id)
+            tmp_dict = {
+                'id': build_id,
+                'status': build_data.get_status(),
+                'duration': str(build_data.get_duration()),
+                'timestamp': str(build_data.get_timestamp() + datetime.timedelta(hours=8))
+            }
+            print(type(tmp_dict['timestamp']))
+            data.append(tmp_dict)
+    return json.dumps({'code': 1, 'msg': data})
+
+
+@main.route('/deploy/build_result', methods=['POST'])
 def test():
-    return render_template('cmdb/server_detail.html',
-                           )
+    data = request.json
+    deploy_logs_tb = DBBaseClass('deploy_logs')
+    deploy_logs_tb.create(data)
+    return 'OK'

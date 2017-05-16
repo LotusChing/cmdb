@@ -57,7 +57,7 @@ class Product(db.Model):
     status = db.Column(db.Integer, nullable=False, index=True, default=1)
     ops_people = db.relationship('People', foreign_keys=[ops_interface])
     dev_people = db.relationship('People', foreign_keys=[dev_interface])
-    
+
 
 
 class Server(db.Model):
@@ -88,3 +88,15 @@ class Server(db.Model):
     people = db.relationship('People')
     product = db.relationship('Product')
     idc = db.relationship('Idc')
+
+
+class Deploy_Logs(db.Model):
+    __tablename__ = 'deploy_logs'
+    id = db.Column(db.Integer, primary_key=True)
+    job_id = db.Column(db.Integer, nullable=False)
+    job_name = db.Column(db.String(50), nullable=False)
+    status = db.Column(db.Boolean, nullable=False)
+    commit_id = db.Column(db.String(50), nullable=False)
+    commit_people = db.Column(db.String(100), nullable=False)
+    commit_message = db.Column(db.String(200), nullable=False)
+

@@ -89,9 +89,14 @@ class DBBaseClass(object):
                         ref_tb_name,  ref_tb_field = output_field.split('.')
                         # current_app.logger.debug('table: {} field: {}'.format(ref_tb_name, ref_tb_field))
                         ref_tb_obj = getattr(obj, ref_tb_name)
-                        # current_app.logger.debug('tb obj: {} type: {} value: {}'.format(dir(ref_tb_obj), type(ref_tb_obj), ref_tb_obj))
-                        # 日期格式datetime.date转字符串格式str，不然Json会报错
-                        if isinstance(getattr(ref_tb_obj, ref_tb_field), datetime.date):
+                        current_app.logger.debug('tb obj: {} type: {} value: {}'.format(dir(ref_tb_obj), type(ref_tb_obj), ref_tb_obj))
+
+                        if ref_tb_obj is None:
+                            # 如果被外键列数据无法在关联表中找到的话会返回NoneType, has not attribute错误，所以提前处理下
+                            # 当然也可以在getattr时指定默认值为'None'
+                            tmp[output_field.replace('.', '_')] = 'None'
+                        elif isinstance(getattr(ref_tb_obj, ref_tb_field), datetime.date):
+                            # 日期格式datetime.date转字符串格式str，不然Json会报错
                             tmp[output_field.replace('.', '_')] = str(getattr(ref_tb_obj, ref_tb_field))
                         else:
                             tmp[output_field.replace('.', '_')] = getattr(ref_tb_obj, ref_tb_field)

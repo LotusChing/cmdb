@@ -87,7 +87,7 @@
                     field: 'state',
                     checkbox: true // 使用复选框
                 }, {
-                    field: 'idc_name',
+                    field: 'idc_idc_name',
                     title: '机房',
                     align: 'center',
                     valign: 'middle',
@@ -157,12 +157,12 @@
         });
 
         function operateFormatter(value, row, index) {
-            console.log('formatter...', row, value, index)
+            console.log('formatter...', row, value, index);
             return [
-                '<a id="edit" href="/server/update/'+row.id+'"  title="edit">',
+                '<a id="edit" href="/server/update/'+row.id+'"  title="编辑">',
                 '<i class="glyphicon glyphicon-edit"> </i>',
                 '</a>  ',
-                '<a class="detail" href="/server/detail/'+row.id+'" title="detail">',
+                '<a class="detail" href="/server/detail/'+row.id+'" title="详细信息">',
                 '<i class="fa fa-asterisk"> </i>',
                 '</a>'
             ].join('');

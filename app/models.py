@@ -59,7 +59,6 @@ class Product(db.Model):
     dev_people = db.relationship('People', foreign_keys=[dev_interface])
 
 
-
 class Server(db.Model):
     __tablename__ = 'server'
     id = db.Column(db.Integer, primary_key=True)
@@ -95,8 +94,8 @@ class Deploy_Logs(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     job_id = db.Column(db.Integer, nullable=False)
     job_name = db.Column(db.String(50), nullable=False)
+    deploy_stime = db.Column(db.TIMESTAMP, nullable=False, default=datetime.utcnow)
     status = db.Column(db.Boolean, nullable=False)
     commit_id = db.Column(db.String(50), nullable=False)
     commit_people = db.Column(db.String(100), nullable=False)
     commit_message = db.Column(db.String(200), nullable=False)
-

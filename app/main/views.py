@@ -102,5 +102,29 @@ def product_tree():
 
 @main.route('/home', methods=['GET', 'POST'])
 def home():
+    server_tb = DBBaseClass('server')
+    people_tb = DBBaseClass('people')
+    product_tb = DBBaseClass('product')
+    deploy_logs_tb = DBBaseClass('deploy_logs')
+    server_count = len(server_tb.get({'output': ['id']}))
+    people_count = len(people_tb.get({'output': ['id'],  'where': {'status': 1}, 'limit': [0, 999999999999]}))
+    product_line_count = len(product_tb.get({'output': ['id'],  'where': {'status': 1, 'pid': 0}, 'limit': [0, 999999999999]}))
+    deploy_logs_data = deploy_logs_tb.get({'order_by': 'deploy_stime desc'})
+    product_count = product_tb.row('select count(id) from product where pid>0')[0][0]
+    for item in deploy_logs_data:
+        item['deploy_ts'] = int(time.mktime(time.strptime(str(item['deploy_stime']), '%Y-%m-%d %H:%M:%S'))) * 1000
+    current_app.logger.debug('###### Data: {} ######'.format(deploy_logs_data))
     return render_template('home.html',
-                           products_tree=product_tree())
+                           products_tree=product_tree(),
+                           server_count=server_count,
+                           people_count=people_count,
+                           product_line_count=product_line_count,
+                           product_count=product_count,
+                           deploy_logs_data=deploy_logs_data)
+
+
+@main.route('/test2', methods=['GET', 'POST'])
+def test2():
+    product_tb = DBBaseClass('product')
+    product_count = product_tb.row('select count(id) from product where pid>0')
+    return

@@ -19,7 +19,39 @@
     <link href="../static/css/animate.css" rel="stylesheet">
     <link href="../static/css/style.css?v=4.1.0" rel="stylesheet">
 </head>
-
+<script>
+    function getDateDiff(dateTimeStamp){
+        var minute = 1000 * 60;
+        var hour = minute * 60;
+        var day = hour * 24;
+        var month = day * 30;
+        var now = Math.floor(Date.now());
+        var diffValue = now - dateTimeStamp;
+        if(diffValue < 0){return;}
+        var monthC =diffValue/month;
+        var weekC =diffValue/(7*day);
+        var dayC =diffValue/day;
+        var hourC =diffValue/hour;
+        var minC =diffValue/minute;
+        if(monthC>=1){
+            result="" + parseInt(monthC) + "月前";
+        }
+        else if(weekC>=1){
+            result="" + parseInt(weekC) + "周前";
+        }
+        else if(dayC>=1){
+            result=""+ parseInt(dayC) +"天前";
+        }
+        else if(hourC>=1){
+            result=""+ parseInt(hourC) +"小时前";
+        }
+        else if(minC>=1){
+            result=""+ parseInt(minC) +"分钟前";
+        }else
+            result="刚刚";
+        return result;
+    }
+</script>
 
 
 <body class="white-bg">
@@ -44,7 +76,7 @@
                     <span class="badge badge-success item_btn">Hosts</span>
                 </div>
                 <div class="ibox-content">
-                    <p class="text-center number">666</p>
+                    <p class="text-center number">{{ server_count }}</p>
                 </div>
             </div>
             <div class="ibox float-e-margins">
@@ -53,7 +85,7 @@
                     <span class="badge badge-info item_btn">Product</span>
                 </div>
                 <div class="ibox-content">
-                    <p class="text-center number">666/66/6</p>
+                    <p class="text-center number">{{ product_line_count }}/{{ product_count }}/6</p>
                 </div>
             </div>
         </div>
@@ -73,7 +105,7 @@
                     <span class="badge badge-primary  item_btn">People</span>
                 </div>
                 <div class="ibox-content">
-                    <p class="text-center number">67</p>
+                    <p class="text-center number">{{ people_count }}</p>
                 </div>
             </div>
         </div>
@@ -87,20 +119,23 @@
                 </div>
 
                 <div class="ibox-content timeline">
-                    <div class="timeline-item">
-                        <div class="row">
-                            <div class="col-xs-4">
-                                <p class="text-navy f_left relative_time text-center">2 小时前</p>
-                            </div>
-                            <div class="col-xs-8 content no-top-border">
-                                <div class="badge badge-warning deploy_job_name">UAirServer-develop</div>
-                                <p class="deploy_ctx">提交人：敛青</p>
-                                <p class="deploy_ctx">todo server detail, home page</p>
-                                <div class="btn btn-info btn-rounded btn-xs" id="commit_id_btn">commit id</div>
-                                <div class="btn btn-info btn-rounded btn-xs" id="build_log_btn" name="UAirServer-develop" value="80">build log</div>
+                    {% for log in deploy_logs_data %}
+                        <div class="timeline-item">
+                            <div class="row">
+                                <div class="col-xs-4">
+                                    <p class="text-navy f_left relative_time text-center" id="ts"><script type="text/javascript">document.write(getDateDiff({{ log.deploy_ts }}));</script></p>
+                                </div>
+                                <div class="col-xs-8 content no-top-border">
+                                    <div class="badge badge-warning deploy_job_name">{{ log.job_name }}</div>
+                                    <p class="deploy_ctx">提交人：{{ log.commit_people }}</p>
+                                    <p class="deploy_ctx">todo server detail, home page</p>
+                                    <p class="deploy_ctx">{{ log.deploy_stime }}</p>
+                                    <div class="btn btn-info btn-rounded btn-xs" id="commit_id_btn_{{ log.id }}" value="{{ log.commit_id }}" onclick="pop_commit_ip(this)">commit id</div>
+                                    <div class="btn btn-info btn-rounded btn-xs" id="build_log_btn" name="{{ log.job_name }}" value="{{ log.job_id }}" onclick="jenkins_build_log(this)">build log</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -199,38 +234,40 @@
         })
     });
 
-    $('#commit_id_btn').click(function () {
-        layer.tips('<p>6c7105a9e2887a381b7b984d9be68f723312163e</p>', '#commit_id_btn', {
+    function pop_commit_ip(t) {
+        var commit_id = $(t).attr('value');
+        layer.tips('<p>' + commit_id+ '</p>', '#'+$(t).attr('id'), {
             tips: [1, '#3595CC'],
             time: 3000
         });
-    });
-    if(screen.width>=900){
-        $('#build_log_btn').click(function (e, data) {
-            var job_num = $(this).attr('name');
-            var build_id = $(this).attr('value');
-                parent.layer.open({
-                    type: 2,
-                    title: '很多时候，我们想最大化看，比如像这个页面。',
-                    shadeClose: true,
-                    shade: false,
-                    maxmin: true, //开启最大化最小化按钮
-                    area: ['1150px', '650px'],
-                    content: 'http://120.24.80.34:2222/job/' + job_num + '/' + build_id + '/consoleText'
-                });
-        });
-    }else {
-        $('#build_log_btn').click(function (e, data) {
+    }
+
+    function jenkins_build_log(t) {
+        var job_num = $(t).attr('name');
+        var build_id = $(t).attr('value');
+        if (screen.width>=900){
+            parent.layer.open({
+                type: 2,
+                title: '很多时候，我们想最大化看，比如像这个页面。',
+                shadeClose: true,
+                shade: false,
+                maxmin: true, //开启最大化最小化按钮
+                area: ['1150px', '650px'],
+                content: 'http://120.24.80.34:2222/job/' + job_num + '/' + build_id + '/consoleText'
+            });
+        }else {
             parent.layer.open({
                 type: 2,
                 title: 'layer mobile页',
                 shadeClose: true,
                 shade: 0.8,
                 area: ['380px', '90%'],
-                content: 'http://120.24.80.34:2222/job/UAirServer-develop/200/consoleText'
+                content: 'http://120.24.80.34:2222/job/' + job_num + '/' + build_id + '/consoleText'
             });
-        })
+        }
     }
+
+
 
 
 </script>

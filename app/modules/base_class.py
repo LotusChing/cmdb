@@ -54,7 +54,7 @@ class DBBaseClass(object):
             if '.' in field: continue
             if not hasattr(self.obj, field):
                 current_app.logger.warning('参数错误：{}表中没有{}列.'.format(self.obj.__name__, field))
-                raise Exception('params error: {}表中没有{}列。'.format(self.obj.__name__, field))
+                raise Exception('params error: {}表中没有{}列.'.format(self.obj.__name__, field))
 
         '''验证Orderby字段'''
         tmp_order_by = order_by.split()
@@ -76,8 +76,10 @@ class DBBaseClass(object):
         # data = db.session.query(self.obj).filter_by(**where).order_by(order_by).limit(limit).all()
         data = db.session.query(self.obj).filter_by(**where).order_by(order_by).offset(start_offset).limit(page_size).all()
         current_app.logger.debug('执行SQL完成')
+        return self.process_result(data, output)
 
-        '''处理返回数据'''
+    '''处理返回数据'''
+    def process_result(self, data, output=False):
         current_app.logger.debug('处理返回数据.')
         res = []
         for obj in data:
@@ -181,3 +183,13 @@ class DBBaseClass(object):
             current_app.logger.warning('删除失败：{}'.format(e))
             raise Exception('delete commit error')
         return res
+
+    def row(self, row_sql):
+        sql = db.text(row_sql)
+        data = db.session.execute(sql)
+        res = []
+        for row in data.fetchall():
+            res.append(row)
+        current_app.logger.debug('###### Result: {} ######'.format(res))
+        return res
+
